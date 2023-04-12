@@ -18,7 +18,7 @@ app.use(cors({
 app.use(cookieParser())
 
 app.get('/', (req, res) => {
-    res.send('Rental Management app working.')
+    res.send('Kulfi housing app working.')
 })
 
 app.use('/auth', authRoutes);
