@@ -13,7 +13,7 @@ class Property {
     is_active;
 
     constructor(obj) {
-        this.user_id = obj.user_id,
+        this.user_id = obj.user_id || 2,
         this.property_type = obj.property_type,
         this.address = obj.address,
         this.reviews = obj.reviews,
