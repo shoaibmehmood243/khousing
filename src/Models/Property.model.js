@@ -3,6 +3,7 @@ const PropertyUnit = require('./PropertyUnit.model')
 
 class Property {
     user_id;
+    portfolio_id;
     property_type;
     address;
     reviews;
@@ -13,6 +14,7 @@ class Property {
 
     constructor(obj) {
         this.user_id = obj.user_id || 2,
+        this.portfolio_id = obj.portfolio_id,
         this.property_type = obj.property_type,
         this.address = obj.address,
         this.reviews = obj.reviews,

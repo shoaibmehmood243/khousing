@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2023 at 09:27 PM
+-- Generation Time: Apr 16, 2023 at 11:52 AM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -24,6 +24,20 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `company`
+--
+
+CREATE TABLE `company` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `company_name` varchar(300) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `leases`
 --
 
@@ -34,6 +48,21 @@ CREATE TABLE `leases` (
   `lease_start_date` timestamp NULL DEFAULT NULL,
   `is_active` tinyint(4) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `portfolio`
+--
+
+CREATE TABLE `portfolio` (
+  `id` int(11) NOT NULL,
+  `name` varchar(500) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `is_active` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -55,33 +84,6 @@ CREATE TABLE `property` (
   `is_active` tinyint(4) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `property`
---
-
-INSERT INTO `property` (`id`, `user_id`, `property_type`, `address`, `reviews`, `sq_feet`, `created_at`, `updated_at`, `is_active`) VALUES
-(3, 2, '0', '182 Sansome Road, Mooresville, North Carolina 28115, United States', NULL, NULL, '2023-04-13 13:07:14', NULL, 1),
-(4, 2, '0', '182 Santa Maria Court, Burleigh Waters Queensland 4220, Australia', NULL, NULL, '2023-04-13 13:08:37', NULL, 1),
-(5, 2, 'single', 'Rue Sans Souci - Sans Soucistraat 182, 1050 Ixelles, Brussels-Capital, Belgium', NULL, NULL, '2023-04-13 13:10:13', NULL, 1),
-(13, 2, 'condominium', '182 Santa Barbara Road, Hope Island Queensland 4212, Australia', NULL, NULL, '2023-04-13 14:09:18', NULL, 1),
-(14, 2, 'townhouse', '182 San Antonio Court, Robina Queensland 4230, Australia', NULL, NULL, '2023-04-13 14:13:11', NULL, 1),
-(15, 2, 'apartment', '182 Santa Maria Court, Burleigh Waters Queensland 4220, Australia', NULL, NULL, '2023-04-13 14:16:30', NULL, 1),
-(17, 2, 'single', '182 Santa Maria Court, Burleigh Waters Queensland 4220, Australia', NULL, NULL, '2023-04-13 14:21:57', NULL, 1),
-(18, 2, 'condominium', '182 Rue Sansregret, Saint-Calixte, Quebec J0K 1Z0, Canada', NULL, NULL, '2023-04-13 14:25:30', NULL, 1),
-(19, 2, 'single', '192 Beaudesert Beenleigh Road, Wolffdene Queensland 4207, Australia', NULL, NULL, '2023-04-13 14:26:42', NULL, 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `property_types`
---
-
-CREATE TABLE `property_types` (
-  `id` int(11) NOT NULL,
-  `label` varchar(100) NOT NULL,
-  `is_active` tinyint(4) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -98,25 +100,6 @@ CREATE TABLE `property_units` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `is_active` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `property_units`
---
-
-INSERT INTO `property_units` (`id`, `unit`, `property_id`, `bedroom`, `bathroom`, `created_at`, `updated_at`, `is_active`) VALUES
-(1, 'Single', 3, '0', '0', '2023-04-13 13:07:14', NULL, 1),
-(2, 'Single', 4, '3', '2', '2023-04-13 13:08:37', NULL, 1),
-(3, 'Single', 5, '4', '1.5', '2023-04-13 13:10:13', NULL, 1),
-(6, '200', 13, '2', '1.0', '2023-04-13 14:09:18', NULL, 1),
-(7, '300', 13, '4', '2.0', '2023-04-13 14:09:18', NULL, 1),
-(8, 'name', 14, '4', '1.0', '2023-04-13 14:13:11', NULL, 1),
-(9, 'test', 14, '3', '1.5', '2023-04-13 14:13:11', NULL, 1),
-(10, 'name', 15, '2', '1.0', '2023-04-13 14:16:30', NULL, 1),
-(11, 'test', 15, '3', '1.0', '2023-04-13 14:16:30', NULL, 1),
-(12, 'test', 17, '2', '1.0', '2023-04-13 14:21:57', NULL, 1),
-(13, 'test 2', 17, '4', '1.5', '2023-04-13 14:21:57', NULL, 1),
-(14, 'name', 18, '4', '2.0', '2023-04-13 14:25:30', NULL, 1),
-(15, 'Single', 19, '2', '1.5', '2023-04-13 14:26:42', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -151,22 +134,42 @@ CREATE TABLE `users` (
   `password` varchar(500) NOT NULL,
   `phone_number` varchar(300) DEFAULT NULL,
   `is_admin` tinyint(4) NOT NULL,
+  `user_type` varchar(100) NOT NULL,
+  `company_id` int(11) NOT NULL,
   `is_customer` tinyint(4) NOT NULL,
   `is_active` tinyint(4) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `users`
+-- Table structure for table `user_permission`
 --
 
-INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `password`, `phone_number`, `is_admin`, `is_customer`, `is_active`, `created_at`, `updated_at`) VALUES
-(2, 'shoaib', 'mehmood', 'shoaibmehmood065@gmail.com', '$2b$10$0dHUa4A0wUs7apuCjRSO7.DXKTRgqDOjuksHZjDkNAk9FroyP9gRa', '03084026875', 1, 0, 1, NULL, NULL);
+CREATE TABLE `user_permission` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `view` tinyint(4) NOT NULL,
+  `adding` tinyint(4) NOT NULL,
+  `edit` int(11) NOT NULL,
+  `edit_with_banking` tinyint(4) NOT NULL,
+  `is_active` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `company`
+--
+ALTER TABLE `company`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userIdCompany` (`user_id`);
 
 --
 -- Indexes for table `leases`
@@ -176,18 +179,19 @@ ALTER TABLE `leases`
   ADD KEY `propertyId` (`property_id`);
 
 --
+-- Indexes for table `portfolio`
+--
+ALTER TABLE `portfolio`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `companyIDPortfolio` (`company_id`);
+
+--
 -- Indexes for table `property`
 --
 ALTER TABLE `property`
   ADD PRIMARY KEY (`id`),
   ADD KEY `userId` (`user_id`),
   ADD KEY `property_type` (`property_type`);
-
---
--- Indexes for table `property_types`
---
-ALTER TABLE `property_types`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `property_units`
@@ -208,11 +212,25 @@ ALTER TABLE `residents`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `companyID` (`company_id`);
+
+--
+-- Indexes for table `user_permission`
+--
+ALTER TABLE `user_permission`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userIdPermission` (`user_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `company`
+--
+ALTER TABLE `company`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `leases`
@@ -221,22 +239,22 @@ ALTER TABLE `leases`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `portfolio`
+--
+ALTER TABLE `portfolio`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `property`
 --
 ALTER TABLE `property`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
-
---
--- AUTO_INCREMENT for table `property_types`
---
-ALTER TABLE `property_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `property_units`
 --
 ALTER TABLE `property_units`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `residents`
@@ -251,14 +269,32 @@ ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `user_permission`
+--
+ALTER TABLE `user_permission`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `company`
+--
+ALTER TABLE `company`
+  ADD CONSTRAINT `userIdCompany` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `leases`
 --
 ALTER TABLE `leases`
   ADD CONSTRAINT `propertyId` FOREIGN KEY (`property_id`) REFERENCES `property` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `portfolio`
+--
+ALTER TABLE `portfolio`
+  ADD CONSTRAINT `companyIDPortfolio` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `property`
@@ -277,6 +313,18 @@ ALTER TABLE `property_units`
 --
 ALTER TABLE `residents`
   ADD CONSTRAINT `leaseId` FOREIGN KEY (`lease_id`) REFERENCES `leases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `companyID` FOREIGN KEY (`company_id`) REFERENCES `company` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `user_permission`
+--
+ALTER TABLE `user_permission`
+  ADD CONSTRAINT `userIdPermission` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -9,7 +9,7 @@ const controller = {
             if(emailRes.length > 0) {
                 res.status(200).send({status: false,message:'User with this email is already registered. Try using other email.'});
             } else {
-                const userObj = new User(req.body);
+                const userObj = req.body;
                 const response = await User.Register(userObj);
                 if(response) {
                     res.status(200).send({status: true,response});
