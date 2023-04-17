@@ -33,4 +33,43 @@ Portfolio.getByUserId = async(id)=> {
     })
 }
 
+Portfolio.getByCompany = async(id)=> {
+    return new Promise((resolve, reject)=> {
+        try {
+            const query = `SELECT COUNT(p.id) AS properties, pf.name AS portfolio_name
+            FROM Portfolio pf
+            LEFT JOIN Property p ON p.portfolio_id = pf.id
+            WHERE pf.company_id = ${id}
+            GROUP BY pf.id;
+            `;
+            db.query(query, (err, sqlresult)=> {
+                if(err){
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+Portfolio.add = async(data)=> {
+    return new Promise((resolve, reject)=> {
+        try {
+            const query = `INSERT INTO portfolio SET ?`;
+            db.query(query, data, (err, sqlresult)=> {
+                if(err){
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 module.exports = Portfolio;

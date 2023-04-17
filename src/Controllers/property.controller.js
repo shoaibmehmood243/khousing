@@ -16,7 +16,8 @@ const controller = {
     },
     get: async(req, res, next)=> {
         try {
-            const response = await Property.get();
+            const id = req.params.id;
+            const response = await Property.get(id);
             if(response) {
                 res.status(200).send({status: true,data: response});
             } else {

@@ -6,6 +6,8 @@ class Property {
     portfolio_id;
     property_type;
     address;
+    latitude;
+    longitude;
     reviews;
     sq_feet;
     created_at;
@@ -17,6 +19,8 @@ class Property {
         this.portfolio_id = obj.portfolio_id,
         this.property_type = obj.property_type,
         this.address = obj.address,
+        this.latitude = obj.latitude,
+        this.longitude = obj.longitude,
         this.reviews = obj.reviews,
         this.sq_feet = obj.sq_feet,
         this.created_at = obj.created_at || new Date().toISOString(),
@@ -106,10 +110,10 @@ Property.Add = (property, propertyUnit)=> {
     })
 }
 
-Property.get = ()=> {
+Property.get = (id)=> {
     return new Promise((resolve, reject)=> {
         try {
-            const query = `SELECT * FROM property`;
+            const query = `SELECT * FROM property WHERE user_id = ${id}`;
             db.query(query, (err, sqlresult)=> {
                 if(err) {
                     reject(err);
