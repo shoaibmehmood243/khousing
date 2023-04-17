@@ -37,8 +37,8 @@ Portfolio.getByCompany = async(id)=> {
     return new Promise((resolve, reject)=> {
         try {
             const query = `SELECT COUNT(p.id) AS properties, pf.name AS portfolio_name
-            FROM Portfolio pf
-            LEFT JOIN Property p ON p.portfolio_id = pf.id
+            FROM portfolio pf
+            LEFT JOIN property p ON p.portfolio_id = pf.id
             WHERE pf.company_id = ${id}
             GROUP BY pf.id;
             `;
