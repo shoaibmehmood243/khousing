@@ -17,7 +17,8 @@ const portfolioController = {
     getByCompany: async(req, res, next)=> {
         try {
             const id = req.params.id;
-            const data = await Portfolio.getByCompany(id);
+            const search = req.body.search;
+            const data = await Portfolio.getByCompany(id, search);
             if(data.length > 0) {
                 res.status(200).send({status: true, data: data});
             } else {

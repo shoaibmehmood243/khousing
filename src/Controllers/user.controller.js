@@ -23,10 +23,11 @@ const userController = {
     getUserByCompanyId: async(req, res, next)=> {
         try {
             const id = req.params.id;
+            const search = req.body.search;
             if(!id) {
                 res.status(400).send({status: false, message: 'Please provide a valid id.'});
             } else {
-                const data = await User.getUserByCompanyId(id);
+                const data = await User.getUserByCompanyId(id, search);
                 if(data.length > 0){
                     res.status(200).send({status: true, data:data});
                 } else {

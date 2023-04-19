@@ -33,13 +33,13 @@ Portfolio.getByUserId = async(id)=> {
     })
 }
 
-Portfolio.getByCompany = async(id)=> {
+Portfolio.getByCompany = async(id, search)=> {
     return new Promise((resolve, reject)=> {
         try {
             const query = `SELECT COUNT(p.id) AS properties, pf.name AS portfolio_name
             FROM portfolio pf
             LEFT JOIN property p ON p.portfolio_id = pf.id
-            WHERE pf.company_id = ${id}
+            WHERE pf.company_id = ${id} ${search.length > 0 ? `&& pf.name LIKE '%${search}%'` : ''}
             GROUP BY pf.id;
             `;
             db.query(query, (err, sqlresult)=> {

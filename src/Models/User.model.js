@@ -244,11 +244,14 @@ User.getUserById = async(id)=> {
     })
 }
 
-User.getUserByCompanyId = async(id)=> {
+User.getUserByCompanyId = async(id, search)=> {
     return new Promise((resolve, reject)=> {
         try {
             const query = `SELECT users.first_name, users.last_name, users.email, 
-            users.phone_number, users.user_type FROM users WHERE company_id = ${id}`;
+            users.phone_number, users.user_type FROM users WHERE company_id = ${id}
+            ${search.length > 0 ? `&& CONCAT_WS('-',first_name,last_name,email, phone_number, user_type) LIKE 
+            '%${search}%'` : ''}
+            `;
             db.query(query, (err, sqlresult)=> {
                 if(err){
                     reject(err);
