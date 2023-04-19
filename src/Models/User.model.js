@@ -11,6 +11,7 @@ class User {
     phone_number;
     is_admin;
     is_customer;
+    is_secondary;
     user_type;
     company_id;
     is_active;
@@ -25,6 +26,7 @@ class User {
         this.phone_number = obj.phone_number,     
         this.is_admin = obj.is_admin || 0,  
         this.is_customer = obj.is_customer || 0,   
+        this.is_secondary = obj.is_secondary || 0,   
         this.user_type = obj.user_type,   
         this.company_id = obj.company_id,   
         this.is_active = obj.is_active || 1,
@@ -43,6 +45,65 @@ class Company {
         this.created_at = obj.created_at || new Date().toISOString(),
         this.updated_at = obj.updated_at || null
     }
+}
+
+User.add = (data, permissions)=> {
+    return new Promise(async(resolve, reject)=> {
+        try {
+            db.getConnection((err, conn)=> {
+                if(err){
+                    reject(err);
+                } else {
+                    conn.beginTransaction(async(err)=> {
+                        if(err) {
+                            conn.rollback(()=> {
+                                conn.release();
+                                reject(err);
+                            })
+                        } else {
+                            const salt = await bcrypt.genSalt(10);
+                            const hashedPassword = await bcrypt.hash(data.password, salt);
+                            data.password = hashedPassword;
+                            let query = `INSERT INTO users SET ?`;
+                            conn.query(query, data, (err, sqlresult)=> {
+                                if(err) {
+                                    conn.rollback(()=> {
+                                        conn.release();
+                                        reject(err);
+                                    })
+                                } else {
+                                    const permissionObj = {...permissions, user_id: sqlresult.insertId};
+                                    const newPermission = new UserPermission(permissionObj);
+                                    query = `INSERT INTO user_permission SET ?`;
+                                    conn.query(query, newPermission, (err, sqlresult2)=> {
+                                        if(err) {
+                                            conn.rollback(()=> {
+                                                conn.release();
+                                                reject(err);
+                                            })
+                                        } else {
+                                            conn.commit((err)=> {
+                                                if(err) {
+                                                    conn.rollback(()=> {
+                                                        conn.release();
+                                                        reject(err);
+                                                    })
+                                                } else {
+                                                    resolve({sqlresult})
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
 }
 
 User.getByEmail = (email)=> {
@@ -170,6 +231,24 @@ User.getUserById = async(id)=> {
         try {
             const query = `SELECT users.id as user_id, users.first_name, users.last_name, users.email, users.phone_number,
                  users.is_admin, users.user_type, users.company_id, users.is_customer FROM users WHERE id = ${id}`;
+            db.query(query, (err, sqlresult)=> {
+                if(err){
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+User.getUserByCompanyId = async(id)=> {
+    return new Promise((resolve, reject)=> {
+        try {
+            const query = `SELECT users.first_name, users.last_name, users.email, 
+            users.phone_number, users.user_type FROM users WHERE company_id = ${id}`;
             db.query(query, (err, sqlresult)=> {
                 if(err){
                     reject(err);

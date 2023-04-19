@@ -4,6 +4,7 @@ const PropertyUnit = require('./PropertyUnit.model')
 class Property {
     user_id;
     portfolio_id;
+    company_id;
     property_type;
     address;
     latitude;
@@ -17,6 +18,7 @@ class Property {
     constructor(obj) {
         this.user_id = obj.user_id || 2,
         this.portfolio_id = obj.portfolio_id,
+        this.company_id = obj.company_id,
         this.property_type = obj.property_type,
         this.address = obj.address,
         this.latitude = obj.latitude,
@@ -113,7 +115,7 @@ Property.Add = (property, propertyUnit)=> {
 Property.get = (id)=> {
     return new Promise((resolve, reject)=> {
         try {
-            const query = `SELECT * FROM property WHERE user_id = ${id}`;
+            const query = `SELECT * FROM property WHERE company_id = ${id}`;
             db.query(query, (err, sqlresult)=> {
                 if(err) {
                     reject(err);
