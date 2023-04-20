@@ -112,10 +112,11 @@ Property.Add = (property, propertyUnit)=> {
     })
 }
 
-Property.get = (id)=> {
+Property.get = (id, search)=> {
     return new Promise((resolve, reject)=> {
         try {
-            const query = `SELECT * FROM property WHERE company_id = ${id}`;
+            const query = `SELECT address, latitude, longitude, property_type FROM property
+            WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
             db.query(query, (err, sqlresult)=> {
                 if(err) {
                     reject(err);

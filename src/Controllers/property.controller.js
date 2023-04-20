@@ -17,7 +17,8 @@ const controller = {
     get: async(req, res, next)=> {
         try {
             const id = req.params.id;
-            const response = await Property.get(id);
+            const search = req.body.search;
+            const response = await Property.get(id, search);
             if(response) {
                 res.status(200).send({status: true,data: response});
             } else {
