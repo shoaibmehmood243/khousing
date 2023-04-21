@@ -47,7 +47,7 @@ class Residents {
 Lease.get = async (id, search) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT leases.id as lease_id, property.address as address, leases.created_at as created_at,
+            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_start_date as created_at,
             GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) SEPARATOR ', ') as residents
             FROM leases
             JOIN property ON property.id = leases.property_id
