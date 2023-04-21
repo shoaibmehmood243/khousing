@@ -66,7 +66,6 @@ Property.Add = (property, propertyUnit)=> {
                                                         res(false)
                                                     });
                                                 } else {
-                                                    res(true);
                                                     Promise.all(temp1)
                                                         .then((promiseReturn)=> {
                                                             if(promiseReturn.indexOf(false) == -1) {
@@ -79,7 +78,7 @@ Property.Add = (property, propertyUnit)=> {
                                                                     } else {
                                                                       conn.release();
                                                                       resolve({
-                                                                        sales_order_id: sqlresult.insertId,
+                                                                        data: sqlresult.insertId,
                                                                       });
                                                                     }
                                                                 });
@@ -115,7 +114,7 @@ Property.Add = (property, propertyUnit)=> {
 Property.get = (id, search)=> {
     return new Promise((resolve, reject)=> {
         try {
-            const query = `SELECT address, latitude, longitude, property_type FROM property
+            const query = `SELECT id, address, latitude, longitude, property_type FROM property
             WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
             db.query(query, (err, sqlresult)=> {
                 if(err) {
