@@ -116,7 +116,6 @@ Property.get = (id, search)=> {
         try {
             const query = `SELECT id, address, latitude, longitude, property_type FROM property
             WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
-            console.log(query);
             db.query(query, (err, sqlresult)=> {
                 if(err) {
                     reject(err);
