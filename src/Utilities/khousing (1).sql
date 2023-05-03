@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2023 at 12:21 PM
+-- Generation Time: May 03, 2023 at 04:01 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -56,10 +56,20 @@ CREATE TABLE `leases` (
   `property_id` int(11) NOT NULL,
   `lease_term` varchar(300) NOT NULL,
   `lease_start_date` timestamp NULL DEFAULT NULL,
+  `lease_end_date` timestamp NULL DEFAULT NULL,
+  `lease_length` varchar(200) DEFAULT NULL,
   `is_active` tinyint(4) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `leases`
+--
+
+INSERT INTO `leases` (`id`, `property_id`, `lease_term`, `lease_start_date`, `lease_end_date`, `lease_length`, `is_active`, `created_at`, `updated_at`) VALUES
+(8, 27, 'fixed', '2023-05-15 14:00:00', '2023-05-05 19:00:00', '6 months', 1, '2023-05-03 02:33:54', NULL),
+(9, 32, 'monthly', '2023-05-02 14:00:00', '2023-06-01 19:00:00', NULL, 1, '2023-05-03 02:35:35', NULL);
 
 -- --------------------------------------------------------
 
@@ -180,11 +190,20 @@ CREATE TABLE `residents` (
   `middle_name` varchar(500) DEFAULT NULL,
   `last_name` varchar(500) NOT NULL,
   `email` varchar(500) NOT NULL,
-  `phone_number` varchar(500) DEFAULT NULL,
+  `number` varchar(500) DEFAULT NULL,
   `is_active` tinyint(4) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `residents`
+--
+
+INSERT INTO `residents` (`id`, `lease_id`, `first_name`, `middle_name`, `last_name`, `email`, `number`, `is_active`, `created_at`, `updated_at`) VALUES
+(7, 8, 'shoaib', 'ahmed', 'shoaib', 'shoaibmehmood065@gmail.com', '03084026875', 1, '2023-05-03 02:33:54', NULL),
+(8, 9, 'ali', 'ahmed', 'mehmood', 'ali@gmail.com', '03084026875', 1, '2023-05-03 02:35:35', NULL),
+(9, 9, 'ahmed', 'asghar', 'butt', 'ahmed@gmail.com', '03084026875', 1, '2023-05-03 02:35:35', NULL);
 
 -- --------------------------------------------------------
 
@@ -335,7 +354,7 @@ ALTER TABLE `company`
 -- AUTO_INCREMENT for table `leases`
 --
 ALTER TABLE `leases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `portfolio`
@@ -359,7 +378,7 @@ ALTER TABLE `property_units`
 -- AUTO_INCREMENT for table `residents`
 --
 ALTER TABLE `residents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
