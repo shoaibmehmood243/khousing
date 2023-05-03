@@ -4,6 +4,7 @@ class Lease {
     property_id;
     lease_term;
     lease_start_date;
+    lease_end_date;
     lease_length;
     is_active;
     created_at;
@@ -13,6 +14,7 @@ class Lease {
         this.property_id = obj.property_id,
             this.lease_term = obj.lease_term,
             this.lease_start_date = obj.lease_start_date,
+            this.lease_end_date = obj.lease_end_date,
             this.lease_length = obj.lease_length,
             this.is_active = obj.is_active || 1,
             this.created_at = obj.created_at || new Date().toISOString(),
@@ -56,6 +58,32 @@ Lease.get = async (id, search) => {
             ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
             '%${search}%'` : ''}
             GROUP BY leases.id
+            `;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+Lease.getLeaseDetail = async (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT property.address, leases.id, leases.lease_start_date, leases.lease_term, 
+            residents.first_name, residents.middle_name, residents.last_name, residents.email, 
+            residents.number
+            FROM leases
+            JOIN property
+            ON leases.property_id=property.id
+            JOIN residents
+            ON residents.lease_id=leases.id
+            WHERE leases.id=${id}
             `;
             db.query(query, (err, sqlresult) => {
                 if (err) {

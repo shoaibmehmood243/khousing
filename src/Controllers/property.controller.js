@@ -27,6 +27,20 @@ const controller = {
         } catch (error) {
             next(error);
         }
+    },
+    getPropertyByLease: async(req, res, next)=> {
+        try {
+            const id = req.params.id;
+            const search = req.body.search;
+            const response = await Property.getPropertyByLease(id, search);
+            if(response) {
+                res.status(200).send({status: true,data: response});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
+        } catch (error) {
+            next(error);
+        }
     }
 }
 

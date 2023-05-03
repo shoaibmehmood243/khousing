@@ -116,6 +116,29 @@ Property.get = (id, search)=> {
         try {
             const query = `SELECT id, address, latitude, longitude, property_type FROM property
             WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
+            console.log(query);
+            db.query(query, (err, sqlresult)=> {
+                if(err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+Property.getPropertyByLease = (id, search)=> {
+    return new Promise((resolve, reject)=> {
+        try {
+            const query = `SELECT p.id, p.address, p.latitude, p.longitude, p.property_type 
+            FROM property AS p
+            LEFT JOIN leases AS l ON p.id = l.property_id
+            WHERE p.company_id = ${id} ${search.length > 0 ? `AND p.address LIKE '%182%'` : ''}
+            AND l.property_id IS NULL
+            `;
             db.query(query, (err, sqlresult)=> {
                 if(err) {
                     reject(err);
