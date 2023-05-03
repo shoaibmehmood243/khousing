@@ -46,15 +46,22 @@ class Residents {
     }
 }
 
-Lease.get = async (id, search) => {
+Lease.get = async (id, tab, search) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_start_date as created_at,
+            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_end_date, 
+            leases.lease_start_date as created_at,
             GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) SEPARATOR ', ') as residents
             FROM leases
             JOIN property ON property.id = leases.property_id
             JOIN residents ON residents.lease_id = leases.id
             WHERE property.company_id = ${id} && leases.is_active = 1
+            && ${tab === 1 ? 
+                `leases.lease_end_date > DATE_ADD(NOW(), INTERVAL 7 DAY)` : 
+                tab === 2 ? 
+                `leases.lease_end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)` : 
+                `leases.lease_end_date < NOW()`
+                }
             ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
             '%${search}%'` : ''}
             GROUP BY leases.id
@@ -75,9 +82,9 @@ Lease.get = async (id, search) => {
 Lease.getLeaseDetail = async (id) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT property.address, leases.id, leases.lease_start_date, leases.lease_term, 
-            residents.first_name, residents.middle_name, residents.last_name, residents.email, 
-            residents.number
+            const query = `SELECT property.address, leases.id, leases.lease_start_date,leases.lease_end_date,
+            leases.lease_term, residents.first_name, residents.middle_name, residents.last_name, 
+            residents.email, residents.number
             FROM leases
             JOIN property
             ON leases.property_id=property.id

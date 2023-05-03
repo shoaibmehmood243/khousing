@@ -29,7 +29,8 @@ const leaseController = {
         try {
             const id = req.params.id;
             const search = req.body.search;
-            const data = await Lease.get(id, search);
+            const tab = req.body.tab;
+            const data = await Lease.get(id, tab, search);
             if (data.length > 0) {
                 res.status(200).send({ status: true, data: data });
             } else {
