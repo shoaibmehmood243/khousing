@@ -66,6 +66,7 @@ Property.Add = (property, propertyUnit)=> {
                                                         res(false)
                                                     });
                                                 } else {
+                                                    res(true);
                                                     Promise.all(temp1)
                                                         .then((promiseReturn)=> {
                                                             if(promiseReturn.indexOf(false) == -1) {
