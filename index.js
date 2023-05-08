@@ -11,6 +11,7 @@ const propertyRoutes = require('./src/Routes/property.routes');
 const userRoutes = require('./src/Routes/user.routes');
 const portfolioRoutes = require('./src/Routes/portfolio.routes');
 const leaseRoutes = require('./src/Routes/lease.routes');
+const paymentRoutes = require('./src/Routes/payments.routes');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -30,6 +31,7 @@ app.use('/property', propertyRoutes);
 app.use('/user', userRoutes);
 app.use('/portfolio', portfolioRoutes);
 app.use('/lease', leaseRoutes);
+app.use('/payment', paymentRoutes);
 
 app.use((req, res, next) => {
     const err = new Error("Not found");
