@@ -68,6 +68,35 @@ Payment.get = async (id, search) => {
     })
 }
 
+Payment.getById = async (id, propertyId, search) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_end_date, 
+                leases.lease_start_date as created_at,
+                GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) 	
+                SEPARATOR ', ') as residents, payments.id, payments.current_balance, payments.monthly_rent_amount, 
+                payments.monthly_due_day, payments.late_fee_amount, payments.prorated_rent_amount, payments.security_deposit_amount
+                FROM leases
+                JOIN property ON property.id = leases.property_id
+                JOIN residents ON residents.lease_id = leases.id
+                JOIN payments ON payments.lease_id = leases.id
+                WHERE property.company_id = ${id} && payments.id = ${propertyId} && leases.is_active = 1
+                ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
+                '%${search}%'` : ''}
+                GROUP BY leases.id`;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 Payment.add = async (data) => {
     return new Promise((resolve, reject) => {
         try {
