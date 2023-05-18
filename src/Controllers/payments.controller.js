@@ -24,12 +24,26 @@ const paymentController = {
             next(error);
         }
     },
-    getByPropertyId: async(req, res, next)=> {
+    getByPaymentId: async(req, res, next)=> {
         try {
             const id = req.params.id;
             const search = req.body.search;
-            const propertyId = req.body.propertyId;
-            const data = await Payment.getById(id, propertyId, search);
+            const paymentId = req.body.paymentId;
+            const data = await Payment.getById(id, paymentId, search);
+            if(data.length > 0) {
+                res.status(200).send({status: true, data: data});
+            } else {
+                res.status(200).send({status: false, message: 'No data exists.'});
+            }   
+        } catch (error) {
+            next(error);
+        }
+    },
+    getTransactions: async(req, res, next)=> {
+        try {
+            const id = req.params.id;
+            const leaseId = req.body.leaseId;
+            const data = await Payment.getTransactions(id, leaseId);
             if(data.length > 0) {
                 res.status(200).send({status: true, data: data});
             } else {
