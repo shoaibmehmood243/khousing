@@ -105,6 +105,28 @@ Lease.getLeaseDetail = async (id) => {
     })
 }
 
+Lease.getResidents = async (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT residents.id as value, CONCAT_WS(' ', residents.first_name, residents.middle_name, residents.last_name) AS name
+            FROM leases
+            JOIN residents
+            ON residents.lease_id = leases.id
+            WHERE lease_id = ${id}
+            `;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 Lease.add = async (leases, residents) => {
     return new Promise((resolve, reject) => {
         db.getConnection((err, conn) => {

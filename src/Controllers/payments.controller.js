@@ -1,4 +1,4 @@
-const Payment = require('../Models/Payment.model');
+const {Payment, Transactions} = require('../Models/Payment.model');
 
 const paymentController = {
     add: async(req, res, next)=> {
@@ -35,6 +35,19 @@ const paymentController = {
             } else {
                 res.status(404).send({status: false, message: 'No data exists.'});
             }   
+        } catch (error) {
+            next(error);
+        }
+    },
+    recordPayment: async(req, res, next)=> {
+        try {
+            const transactionObj = new Transactions(req.body);
+            const response = await Payment.RecordPayment(transactionObj);
+            if(response) {
+                res.status(200).send({status: true,message: 'Transaction logged successfully.'});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
         } catch (error) {
             next(error);
         }
