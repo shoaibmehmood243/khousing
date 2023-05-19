@@ -8,10 +8,12 @@ class Payment {
     monthly_due_day;
     recurring_rent_start;
     prorated_rent_amount;
+    prorated_rent_amount_submitted;
     prorated_rent_due;
     late_fee_amount;
     late_fee_date;
     security_deposit_amount;
+    security_deposit_amount_submitted;
     security_deposit_due;
     checking_account;
     security_deposit_account_number;
@@ -24,14 +26,16 @@ class Payment {
         this.lease_id = obj.lease_id,
             this.monthly_rent_amount = obj.monthly_rent_amount,
             this.amount_received = obj.amount_received || '0',
-            this.current_balance = obj.current_balance,
+            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) + Number(obj.late_fee_amount) + Number(obj.security_deposit_amount) ,
             this.monthly_due_day = obj.monthly_due_day,
             this.recurring_rent_start = obj.recurring_rent_start,
             this.prorated_rent_amount = obj.prorated_rent_amount,
+            this.prorated_rent_amount_submitted = obj.prorated_rent_amount_submitted || 0,
             this.prorated_rent_due = obj.prorated_rent_due,
             this.late_fee_amount = obj.late_fee_amount,
             this.late_fee_date = obj.late_fee_date,
             this.security_deposit_amount = obj.security_deposit_amount,
+            this.security_deposit_amount_submitted = obj.security_deposit_amount_submitted || 0,
             this.security_deposit_due = obj.security_deposit_due,
             this.checking_account = obj.checking_account,
             this.security_deposit_account_number = obj.security_deposit_account_number,
@@ -201,11 +205,53 @@ Payment.RecordPayment = async (transaction) => {
     })
 }
 
+Payment.getUpcomingTransactions = async (id, leaseId) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT monthly_rent_amount AS charge, 
+            DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
+            'Monthly' AS details, amount_received AS payment, current_balance AS balance
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId}
+            
+            UNION ALL
+            
+            SELECT prorated_rent_amount AS charge, 
+            DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date, 
+            'Prorated rent' AS details, prorated_rent_amount_submitted AS payment, 
+            prorated_rent_amount - prorated_rent_amount_submitted AS balance
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId} AND prorated_rent_amount <> prorated_rent_amount_submitted
+            
+            UNION ALL
+            
+            SELECT security_deposit_amount AS charge, 
+            DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date, 
+            'Security Deposit' AS details, security_deposit_amount_submitted AS payment, 
+            security_deposit_amount - security_deposit_amount_submitted AS balance
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId} AND security_deposit_amount <> security_deposit_amount_submitted;
+            
+            `;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 Payment.getTransactions = async (id, leaseId) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT DATE_FORMAT(transactions.created_at, '%M %e, %Y') AS date, leases.lease_term, 
-            SUM(payments.monthly_rent_amount + payments.prorated_rent_amount + payments.late_fee_amount + payments.security_deposit_amount) AS charge,
+            const query = `SELECT DATE_FORMAT(transactions.created_at, '%M %e, %Y') AS date, 
+            leases.lease_term, 
+            payments.monthly_rent_amount AS charge,
             transactions.amount AS payment, payments.amount_received AS balance
             FROM payments
             JOIN leases ON leases.id = payments.lease_id
