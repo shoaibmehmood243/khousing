@@ -47,7 +47,7 @@ const paymentController = {
             if(data.length > 0) {
                 res.status(200).send({status: true, data: data});
             } else {
-                res.status(404).send({status: false, message: 'No data exists.'});
+                res.status(200).send({status: false, message: 'No data exists.'});
             }   
         } catch (error) {
             next(error);
@@ -61,7 +61,7 @@ const paymentController = {
             if(data.length > 0) {
                 res.status(200).send({status: true, data: data});
             } else {
-                res.status(404).send({status: false, message: 'No data exists.'});
+                res.status(200).send({status: false, message: 'No data exists.'});
             }   
         } catch (error) {
             next(error);
