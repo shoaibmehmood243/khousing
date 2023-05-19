@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 18, 2023 at 04:05 PM
+-- Generation Time: May 19, 2023 at 03:11 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -83,7 +83,9 @@ CREATE TABLE `leases` (
 INSERT INTO `leases` (`id`, `property_id`, `lease_term`, `lease_start_date`, `lease_end_date`, `lease_length`, `is_active`, `created_at`, `updated_at`) VALUES
 (5, 49, 'monthly', '2023-05-17 14:00:00', '2023-06-16 19:00:00', NULL, 1, '2023-05-18 06:16:26', NULL),
 (6, 50, 'monthly', '2023-05-17 14:00:00', '2023-06-16 19:00:00', NULL, 1, '2023-05-18 07:26:40', NULL),
-(7, 51, 'monthly', '2023-05-17 14:00:00', '2023-06-16 19:00:00', NULL, 1, '2023-05-18 08:27:52', NULL);
+(7, 51, 'monthly', '2023-05-17 14:00:00', '2023-06-16 19:00:00', NULL, 1, '2023-05-18 08:27:52', NULL),
+(8, 52, 'monthly', '2023-05-18 14:00:00', '2023-06-17 19:00:00', NULL, 1, '2023-05-19 05:56:53', NULL),
+(9, 53, 'monthly', '2023-05-18 14:00:00', '2023-06-17 19:00:00', NULL, 1, '2023-05-19 06:38:48', NULL);
 
 -- --------------------------------------------------------
 
@@ -100,10 +102,12 @@ CREATE TABLE `payments` (
   `monthly_due_day` varchar(100) NOT NULL,
   `recurring_rent_start` int(11) NOT NULL,
   `prorated_rent_amount` varchar(500) DEFAULT NULL,
+  `prorated_rent_amount_submitted` int(11) NOT NULL,
   `prorated_rent_due` varchar(500) DEFAULT NULL,
   `late_fee_amount` varchar(500) DEFAULT NULL,
   `late_fee_date` varchar(500) DEFAULT NULL,
   `security_deposit_amount` varchar(500) DEFAULT NULL,
+  `security_deposit_amount_submitted` int(11) NOT NULL,
   `security_deposit_due` varchar(500) DEFAULT NULL,
   `checking_account` varchar(500) NOT NULL,
   `security_deposit_account_number` varchar(500) DEFAULT NULL,
@@ -117,9 +121,11 @@ CREATE TABLE `payments` (
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `lease_id`, `monthly_rent_amount`, `amount_received`, `current_balance`, `monthly_due_day`, `recurring_rent_start`, `prorated_rent_amount`, `prorated_rent_due`, `late_fee_amount`, `late_fee_date`, `security_deposit_amount`, `security_deposit_due`, `checking_account`, `security_deposit_account_number`, `security_deposit_account`, `is_active`, `created_at`, `updated_at`) VALUES
-(2, 5, '2000', '200', '1800', '1', 2023, '200', '2023-05-30T19:00:00.000Z', '1000', '3', '1000', '2023-05-24T19:00:00.000Z', '4242 4242 4242 4242', '', 1, 1, '2023-05-18 13:57:12', NULL),
-(3, 6, '2000', '0', '2000', '1', 2023, '', '', '10', '5', '100', '2023-05-24T19:00:00.000Z', '4242 4242 4242 4242', '', 1, 1, '2023-05-18 12:32:22', NULL);
+INSERT INTO `payments` (`id`, `lease_id`, `monthly_rent_amount`, `amount_received`, `current_balance`, `monthly_due_day`, `recurring_rent_start`, `prorated_rent_amount`, `prorated_rent_amount_submitted`, `prorated_rent_due`, `late_fee_amount`, `late_fee_date`, `security_deposit_amount`, `security_deposit_amount_submitted`, `security_deposit_due`, `checking_account`, `security_deposit_account_number`, `security_deposit_account`, `is_active`, `created_at`, `updated_at`) VALUES
+(2, 5, '2000', '200', '1800', '1', 2023, '200', 0, '2023-05-30T19:00:00.000Z', '1000', '3', '1000', 0, '2023-05-24T19:00:00.000Z', '4242 4242 4242 4242', '', 1, 1, '2023-05-18 13:57:12', NULL),
+(3, 6, '2000', '0', '2000', '1', 2023, '', 0, '', '10', '5', '100', 0, '2023-05-24T19:00:00.000Z', '4242 4242 4242 4242', '', 1, 1, '2023-05-18 12:32:22', NULL),
+(4, 8, '2000', '0', NULL, '5', 2023, '', 0, '', '100', '1', '500', 0, '2023-05-25T19:00:00.000Z', '4242 4242 4242 4242', '0', 1, 1, '2023-05-19 06:03:14', NULL),
+(5, 9, '1500', '0', '1700', '1', 2023, '', 0, '', '100', '3', '100', 0, '2023-05-25T19:00:00.000Z', '4242 4242 4242 4242', '', 1, 1, '2023-05-19 06:44:12', NULL);
 
 -- --------------------------------------------------------
 
@@ -172,7 +178,9 @@ CREATE TABLE `property` (
 INSERT INTO `property` (`id`, `user_id`, `portfolio_id`, `company_id`, `property_type`, `address`, `latitude`, `longitude`, `reviews`, `sq_feet`, `created_at`, `updated_at`, `is_active`) VALUES
 (49, 21, 22, 12, 'apartment', '120 Sansome Street, San Francisco, California 94111, United States', '37.791493', '-122.400835', NULL, NULL, '2023-05-18 06:16:00', NULL, 1),
 (50, 21, 22, 12, 'condominium', 'Mallory Street, Acushnet, Massachusetts 02743, United States', '41.73262', '-70.91017', NULL, NULL, '2023-05-18 07:25:54', NULL, 1),
-(51, 21, 22, 12, 'apartment', '182 Sansome Street, San Francisco, California 94111, United States', '37.792116', '-122.400959', NULL, NULL, '2023-05-18 08:27:21', NULL, 1);
+(51, 21, 22, 12, 'apartment', '182 Sansome Street, San Francisco, California 94111, United States', '37.792116', '-122.400959', NULL, NULL, '2023-05-18 08:27:21', NULL, 1),
+(52, 21, 22, 12, 'single', 'New Broadway, Westfield, Massachusetts 01085, United States', '42.18356', '-72.70007', NULL, NULL, '2023-05-19 05:55:31', NULL, 1),
+(53, 21, 22, 12, 'apartment', '200 Liberty Street, 200 Liberty St, New York, New York 10281, United States', '40.713445640625004', '-74.01451180078125', NULL, NULL, '2023-05-19 06:38:07', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -198,7 +206,9 @@ CREATE TABLE `property_units` (
 INSERT INTO `property_units` (`id`, `unit`, `property_id`, `bedroom`, `bathroom`, `created_at`, `updated_at`, `is_active`) VALUES
 (37, 'Single', 49, '3', '1.0', '2023-05-18 06:16:00', NULL, 1),
 (38, 'Single', 50, '1', '1.0', '2023-05-18 07:25:54', NULL, 1),
-(39, 'Single', 51, '3', '1.5', '2023-05-18 08:27:21', NULL, 1);
+(39, 'Single', 51, '3', '1.5', '2023-05-18 08:27:21', NULL, 1),
+(40, 'Single', 52, '3', '1.0', '2023-05-19 05:55:31', NULL, 1),
+(41, 'Single', 53, '2', '1.0', '2023-05-19 06:38:07', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -227,7 +237,10 @@ INSERT INTO `residents` (`id`, `lease_id`, `first_name`, `middle_name`, `last_na
 (5, 5, 'ali', '', 'mehmood', 'ali@gmail.com', '03084026875', 1, '2023-05-18 06:16:27', NULL),
 (6, 6, 'shoaib', '', 'mehmood', 'ali@gmail.com', '03084026875', 1, '2023-05-18 07:26:40', NULL),
 (7, 6, 'ahmed', '', 'butt', 'ahmed@gmail.com', '03084026875', 1, '2023-05-18 07:26:40', NULL),
-(8, 7, 'shoaib', '', 'mehmood', 'ali@gmail.com', '03084026875', 1, '2023-05-18 08:27:52', NULL);
+(8, 7, 'shoaib', '', 'mehmood', 'ali@gmail.com', '03084026875', 1, '2023-05-18 08:27:52', NULL),
+(9, 8, 'Josh', '', 'Hazelwood', 'joshhazelwood@gmail.com', '12000000000', 1, '2023-05-19 05:56:53', NULL),
+(10, 8, 'Steve', '', 'smith', 'stevesmith12@gmail.com', '12345678', 1, '2023-05-19 05:56:53', NULL),
+(11, 9, 'Chad', '', 'John', 'chad@gmail.com', '12334444', 1, '2023-05-19 06:38:48', NULL);
 
 -- --------------------------------------------------------
 
@@ -410,13 +423,13 @@ ALTER TABLE `company`
 -- AUTO_INCREMENT for table `leases`
 --
 ALTER TABLE `leases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `portfolio`
@@ -428,19 +441,19 @@ ALTER TABLE `portfolio`
 -- AUTO_INCREMENT for table `property`
 --
 ALTER TABLE `property`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `property_units`
 --
 ALTER TABLE `property_units`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `residents`
 --
 ALTER TABLE `residents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `transactions`
