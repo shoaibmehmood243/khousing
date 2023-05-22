@@ -16,6 +16,9 @@ class Payment {
     security_deposit_amount_submitted;
     security_deposit_due;
     checking_account;
+    routing_number;
+    first_name;
+    last_name;
     security_deposit_account_number;
     security_deposit_account;
     is_active;
@@ -38,6 +41,9 @@ class Payment {
             this.security_deposit_amount_submitted = obj.security_deposit_amount_submitted || 0,
             this.security_deposit_due = obj.security_deposit_due,
             this.checking_account = obj.checking_account,
+            this.routing_number = obj.routing_number,
+            this.first_name = obj.first_name,
+            this.last_name = obj.last_name,
             this.security_deposit_account_number = obj.security_deposit_account_number,
             this.security_deposit_account = obj.security_deposit_account,
             this.is_active = obj.is_active || 1,
