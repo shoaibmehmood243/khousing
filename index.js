@@ -13,6 +13,7 @@ const portfolioRoutes = require('./src/Routes/portfolio.routes');
 const leaseRoutes = require('./src/Routes/lease.routes');
 const paymentRoutes = require('./src/Routes/payments.routes');
 const billRoutes = require('./src/Routes/bill.routes');
+const paymentMethodRoutes = require('./src/Routes/payment-method.routes');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,6 +35,7 @@ app.use('/portfolio', portfolioRoutes);
 app.use('/lease', leaseRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/bill', billRoutes);
+app.use('/payment-method', paymentMethodRoutes);
 
 app.use((req, res, next) => {
     const err = new Error("Not found");

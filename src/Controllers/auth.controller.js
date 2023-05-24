@@ -19,6 +19,21 @@ const controller = {
             next(error);
         }
     },
+    customerRegister: async(req, res, next)=> {
+        try {
+            const emailRes = await User.getByEmail(req.body.email);
+            if(emailRes.length > 0) {
+                res.status(200).send({status: false,message:'User with this email is already registered. Try using other email.'});
+            } else {
+                const response = await User.CustomerRegister(req.body);
+                if(response) {
+                    res.status(200).send({status: true,response});
+                }
+            }
+        } catch (error) {
+            next(error);
+        }
+    },
     login: async(req, res, next)=> {
         try {
             const emailRes = await User.getByEmail(req.body.email);

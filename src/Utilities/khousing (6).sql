@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 22, 2023 at 04:09 PM
+-- Generation Time: May 24, 2023 at 05:38 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -56,7 +56,9 @@ CREATE TABLE `company` (
 --
 
 INSERT INTO `company` (`id`, `company_name`, `created_at`, `updated_at`) VALUES
-(12, 'Shoaib\'s company', '2023-05-18 06:15:27', NULL);
+(-1, 'nil', '2023-05-24 09:57:15', NULL),
+(12, 'Shoaib\'s company', '2023-05-18 06:15:27', NULL),
+(13, 'Shoaib\'s company', '2023-05-24 01:35:59', NULL);
 
 -- --------------------------------------------------------
 
@@ -86,7 +88,8 @@ INSERT INTO `leases` (`id`, `property_id`, `lease_term`, `lease_start_date`, `le
 (7, 51, 'monthly', '2023-05-17 14:00:00', '2023-06-16 19:00:00', NULL, 1, '2023-05-18 08:27:52', NULL),
 (8, 52, 'monthly', '2023-05-18 14:00:00', '2023-06-17 19:00:00', NULL, 1, '2023-05-19 05:56:53', NULL),
 (9, 53, 'monthly', '2023-05-18 14:00:00', '2023-06-17 19:00:00', NULL, 1, '2023-05-19 06:38:48', NULL),
-(10, 54, 'monthly', '2023-05-31 14:00:00', '2023-06-30 19:00:00', NULL, 1, '2023-05-21 23:52:12', NULL);
+(10, 54, 'monthly', '2023-05-31 14:00:00', '2023-06-30 19:00:00', NULL, 1, '2023-05-21 23:52:12', NULL),
+(11, 55, 'monthly', '2023-05-31 14:00:00', '2023-06-30 19:00:00', NULL, 1, '2023-05-24 04:53:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -130,7 +133,33 @@ INSERT INTO `payments` (`id`, `lease_id`, `monthly_rent_amount`, `amount_receive
 (3, 6, '2000', '0', '2000', '1', 2023, '', 0, '', '10', '5', '100', 0, '2023-05-24T19:00:00.000Z', '4242 4242 4242 4242', 0, '', '', '', 1, 1, '2023-05-18 12:32:22', NULL),
 (4, 8, '2000', '0', NULL, '5', 2023, '', 0, '', '100', '1', '500', 0, '2023-05-25T19:00:00.000Z', '4242 4242 4242 4242', 0, '', '', '0', 1, 1, '2023-05-19 06:03:14', NULL),
 (5, 9, '1500', '0', '1700', '1', 2023, '', 0, '', '100', '3', '100', 0, '2023-05-25T19:00:00.000Z', '4242 4242 4242 4242', 0, '', '', '', 1, 1, '2023-05-19 06:44:12', NULL),
-(6, 10, '2000', '0', '2200', '4', 2023, '', 0, '', '100', '5', '100', 0, '2023-05-30T19:00:00.000Z', '4242 4242 4242 4242', 1234, 'shoaib', 'mehmood', '4242 4242 4242 4242', 1, 1, '2023-05-22 09:07:30', NULL);
+(6, 10, '2000', '0', '2200', '4', 2023, '', 0, '', '100', '5', '100', 0, '2023-05-30T19:00:00.000Z', '4242 4242 4242 4242', 1234, 'shoaib', 'mehmood', '4242 4242 4242 4242', 1, 1, '2023-05-22 09:07:30', NULL),
+(7, 11, '2000', '0', '2250', '1', 2023, '', 0, '', '100', '5', '150', 0, '2023-05-30T19:00:00.000Z', '4242 4242 4242 4242', 123456, 'Shoaib', 'Mehmood', '4242 4242 4242 4242', 1, 1, '2023-05-24 06:10:34', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_methods`
+--
+
+CREATE TABLE `payment_methods` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(100) NOT NULL,
+  `card_name` varchar(500) NOT NULL,
+  `card_number` varchar(500) NOT NULL,
+  `routing_number` int(11) DEFAULT NULL,
+  `expiry_date` varchar(500) DEFAULT NULL,
+  `cvc` int(11) DEFAULT NULL,
+  `billing_address` varchar(500) DEFAULT NULL,
+  `apartment` varchar(500) DEFAULT NULL,
+  `city` varchar(500) DEFAULT NULL,
+  `state` varchar(500) DEFAULT NULL,
+  `zip` int(11) DEFAULT NULL,
+  `is_active` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -152,7 +181,8 @@ CREATE TABLE `portfolio` (
 --
 
 INSERT INTO `portfolio` (`id`, `name`, `company_id`, `is_active`, `created_at`, `updated_at`) VALUES
-(22, 'Portfolio 1', 12, 1, '2023-05-18 06:15:27', NULL);
+(22, 'Portfolio 1', 12, 1, '2023-05-18 06:15:27', NULL),
+(23, 'Portfolio 1', 13, 1, '2023-05-24 01:35:59', NULL);
 
 -- --------------------------------------------------------
 
@@ -186,7 +216,8 @@ INSERT INTO `property` (`id`, `user_id`, `portfolio_id`, `company_id`, `property
 (51, 21, 22, 12, 'apartment', '182 Sansome Street, San Francisco, California 94111, United States', '37.792116', '-122.400959', NULL, NULL, '2023-05-18 08:27:21', NULL, 1),
 (52, 21, 22, 12, 'single', 'New Broadway, Westfield, Massachusetts 01085, United States', '42.18356', '-72.70007', NULL, NULL, '2023-05-19 05:55:31', NULL, 1),
 (53, 21, 22, 12, 'apartment', '200 Liberty Street, 200 Liberty St, New York, New York 10281, United States', '40.713445640625004', '-74.01451180078125', NULL, NULL, '2023-05-19 06:38:07', NULL, 1),
-(54, 21, 22, 12, 'condominium', 'Albany, New York 12203, United States', '42.683717', '-73.840702', NULL, NULL, '2023-05-21 23:50:37', NULL, 1);
+(54, 21, 22, 12, 'condominium', 'Albany, New York 12203, United States', '42.683717', '-73.840702', NULL, NULL, '2023-05-21 23:50:37', NULL, 1),
+(55, 21, 22, 12, 'apartment', 'Mallorca, 2228 E Carson St, Pittsburgh, Pennsylvania 15203, United States', '40.428295', '-79.973357', NULL, NULL, '2023-05-24 04:53:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -215,7 +246,8 @@ INSERT INTO `property_units` (`id`, `unit`, `property_id`, `bedroom`, `bathroom`
 (39, 'Single', 51, '3', '1.5', '2023-05-18 08:27:21', NULL, 1),
 (40, 'Single', 52, '3', '1.0', '2023-05-19 05:55:31', NULL, 1),
 (41, 'Single', 53, '2', '1.0', '2023-05-19 06:38:07', NULL, 1),
-(42, 'Single', 54, '1', '1.0', '2023-05-21 23:50:37', NULL, 1);
+(42, 'Single', 54, '1', '1.0', '2023-05-21 23:50:37', NULL, 1),
+(43, 'Single', 55, '2', '1.0', '2023-05-24 04:53:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -248,7 +280,8 @@ INSERT INTO `residents` (`id`, `lease_id`, `first_name`, `middle_name`, `last_na
 (9, 8, 'Josh', '', 'Hazelwood', 'joshhazelwood@gmail.com', '12000000000', 1, '2023-05-19 05:56:53', NULL),
 (10, 8, 'Steve', '', 'smith', 'stevesmith12@gmail.com', '12345678', 1, '2023-05-19 05:56:53', NULL),
 (11, 9, 'Chad', '', 'John', 'chad@gmail.com', '12334444', 1, '2023-05-19 06:38:48', NULL),
-(12, 10, 'Shoaib', '', 'Ali', 'shoaib@gmail.com', '1233444', 1, '2023-05-21 23:52:12', NULL);
+(12, 10, 'Shoaib', '', 'Ali', 'shoaib@gmail.com', '1233444', 1, '2023-05-21 23:52:12', NULL),
+(13, 11, 'Shoaib', '', 'Tariq', 'shoaib.bscs.s.2018@gmail.com', '03084026875', 1, '2023-05-24 04:53:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -300,7 +333,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `password`, `phone_number`, `is_admin`, `user_type`, `company_id`, `is_customer`, `is_secondary`, `is_active`, `created_at`, `updated_at`) VALUES
-(21, 'Shoaib', 'Mehmood', 'shoaibmehmood065@gmail.com', '$2b$10$T91J/SGyt95g7ZHVJec0Yer6W9WmSbDJpFftJro7MxU0PGf9IH6sS', '(214)-324-2343', 0, 'primary', 12, 1, 0, 1, '2023-05-18 06:15:27', NULL);
+(21, 'Shoaib', 'Mehmood', 'shoaibmehmood065@gmail.com', '$2b$10$T91J/SGyt95g7ZHVJec0Yer6W9WmSbDJpFftJro7MxU0PGf9IH6sS', '(214)-324-2343', 1, 'primary', 12, 0, 0, 1, '2023-05-18 06:15:27', NULL),
+(24, 'Shoaib', 'Tariq', 'shoaib.bscs.s.2018@gmail.com', '$2b$10$oZd56U5yFNwpG3xuohSPreztQ7uzibNgj7qAeWdJLTALNAH.MQ4Fu', '(324)-324-5325', 0, 'resident', -1, 1, 0, 1, '2023-05-24 05:09:36', NULL);
 
 -- --------------------------------------------------------
 
@@ -325,7 +359,8 @@ CREATE TABLE `user_permission` (
 --
 
 INSERT INTO `user_permission` (`id`, `user_id`, `view`, `adding`, `edit`, `edit_with_banking`, `is_active`, `created_at`, `updated_at`) VALUES
-(13, 21, 1, 1, 0, 0, 1, '2023-05-18 06:15:27', NULL);
+(13, 21, 1, 1, 0, 0, 1, '2023-05-18 06:15:27', NULL),
+(15, 24, 1, 1, 0, 0, 1, '2023-05-24 05:09:36', NULL);
 
 --
 -- Indexes for dumped tables
@@ -357,6 +392,13 @@ ALTER TABLE `leases`
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `leaseIdPayment` (`lease_id`);
+
+--
+-- Indexes for table `payment_methods`
+--
+ALTER TABLE `payment_methods`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `userIdPaymentMethod` (`user_id`);
 
 --
 -- Indexes for table `portfolio`
@@ -425,43 +467,49 @@ ALTER TABLE `bills`
 -- AUTO_INCREMENT for table `company`
 --
 ALTER TABLE `company`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `leases`
 --
 ALTER TABLE `leases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `payment_methods`
+--
+ALTER TABLE `payment_methods`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `portfolio`
 --
 ALTER TABLE `portfolio`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `property`
 --
 ALTER TABLE `property`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `property_units`
 --
 ALTER TABLE `property_units`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `residents`
 --
 ALTER TABLE `residents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `transactions`
@@ -473,13 +521,13 @@ ALTER TABLE `transactions`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `user_permission`
 --
 ALTER TABLE `user_permission`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
@@ -502,6 +550,12 @@ ALTER TABLE `leases`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `leaseIdPayment` FOREIGN KEY (`lease_id`) REFERENCES `leases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `payment_methods`
+--
+ALTER TABLE `payment_methods`
+  ADD CONSTRAINT `userIdPaymentMethod` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `portfolio`

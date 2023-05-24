@@ -19,19 +19,19 @@ class User {
     updated_at;
 
     constructor(obj) {
-        this.first_name = obj.first_name,        
-        this.last_name = obj.last_name,        
-        this.email = obj.email,
-        this.password = obj.password,
-        this.phone_number = obj.phone_number,     
-        this.is_admin = obj.is_admin || 0,  
-        this.is_customer = obj.is_customer || 0,   
-        this.is_secondary = obj.is_secondary || 0,   
-        this.user_type = obj.user_type,   
-        this.company_id = obj.company_id,   
-        this.is_active = obj.is_active || 1,
-        this.created_at = obj.created_at || new Date().toISOString(),  
-        this.updated_at = obj.updated_at || null
+        this.first_name = obj.first_name,
+            this.last_name = obj.last_name,
+            this.email = obj.email,
+            this.password = obj.password,
+            this.phone_number = obj.phone_number,
+            this.is_admin = obj.is_admin || 0,
+            this.is_customer = obj.is_customer || 0,
+            this.is_secondary = obj.is_secondary || 0,
+            this.user_type = obj.user_type,
+            this.company_id = obj.company_id,
+            this.is_active = obj.is_active || 1,
+            this.created_at = obj.created_at || new Date().toISOString(),
+            this.updated_at = obj.updated_at || null
     }
 }
 
@@ -42,21 +42,21 @@ class Company {
 
     constructor(obj) {
         this.company_name = obj.company_name,
-        this.created_at = obj.created_at || new Date().toISOString(),
-        this.updated_at = obj.updated_at || null
+            this.created_at = obj.created_at || new Date().toISOString(),
+            this.updated_at = obj.updated_at || null
     }
 }
 
-User.add = (data, permissions)=> {
-    return new Promise(async(resolve, reject)=> {
+User.add = (data, permissions) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            db.getConnection((err, conn)=> {
-                if(err){
+            db.getConnection((err, conn) => {
+                if (err) {
                     reject(err);
                 } else {
-                    conn.beginTransaction(async(err)=> {
-                        if(err) {
-                            conn.rollback(()=> {
+                    conn.beginTransaction(async (err) => {
+                        if (err) {
+                            conn.rollback(() => {
                                 conn.release();
                                 reject(err);
                             })
@@ -65,31 +65,31 @@ User.add = (data, permissions)=> {
                             const hashedPassword = await bcrypt.hash(data.password, salt);
                             data.password = hashedPassword;
                             let query = `INSERT INTO users SET ?`;
-                            conn.query(query, data, (err, sqlresult)=> {
-                                if(err) {
-                                    conn.rollback(()=> {
+                            conn.query(query, data, (err, sqlresult) => {
+                                if (err) {
+                                    conn.rollback(() => {
                                         conn.release();
                                         reject(err);
                                     })
                                 } else {
-                                    const permissionObj = {...permissions, user_id: sqlresult.insertId};
+                                    const permissionObj = { ...permissions, user_id: sqlresult.insertId };
                                     const newPermission = new UserPermission(permissionObj);
                                     query = `INSERT INTO user_permission SET ?`;
-                                    conn.query(query, newPermission, (err, sqlresult2)=> {
-                                        if(err) {
-                                            conn.rollback(()=> {
+                                    conn.query(query, newPermission, (err, sqlresult2) => {
+                                        if (err) {
+                                            conn.rollback(() => {
                                                 conn.release();
                                                 reject(err);
                                             })
                                         } else {
-                                            conn.commit((err)=> {
-                                                if(err) {
-                                                    conn.rollback(()=> {
+                                            conn.commit((err) => {
+                                                if (err) {
+                                                    conn.rollback(() => {
                                                         conn.release();
                                                         reject(err);
                                                     })
                                                 } else {
-                                                    resolve({sqlresult})
+                                                    resolve({ sqlresult })
                                                 }
                                             })
                                         }
@@ -106,12 +106,12 @@ User.add = (data, permissions)=> {
     })
 }
 
-User.getByEmail = (email)=> {
-    return new Promise((resolve, reject)=> {
+User.getByEmail = (email) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT * FROM users WHERE email = '${email}'`;
-            db.query(query, (err, sqlresult)=> {
-                if(err) {
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult);
@@ -123,16 +123,16 @@ User.getByEmail = (email)=> {
     })
 }
 
-User.Register = async(data)=> {
-    return new Promise((resolve, reject)=> {
+User.Register = async (data) => {
+    return new Promise((resolve, reject) => {
         try {
-            db.getConnection((err, conn)=> {
-                if(err) {
+            db.getConnection((err, conn) => {
+                if (err) {
                     reject(err);
                 } else {
-                    conn.beginTransaction(async(err)=> {
-                        if(err) {
-                            conn.rollback(()=> {
+                    conn.beginTransaction(async (err) => {
+                        if (err) {
+                            conn.rollback(() => {
                                 conn.release();
                                 reject(err);
                             })
@@ -140,9 +140,9 @@ User.Register = async(data)=> {
                             const companyObj = { company_name: `${data.first_name}'s company` };
                             const company = new Company(companyObj);
                             let query = `INSERT INTO company SET ?`
-                            conn.query(query, company, async(err, companyResult)=> {
-                                if(err){
-                                    conn.rollback(()=> {
+                            conn.query(query, company, async (err, companyResult) => {
+                                if (err) {
+                                    conn.rollback(() => {
                                         conn.release();
                                         reject(err);
                                     })
@@ -153,9 +153,9 @@ User.Register = async(data)=> {
                                     data.company_id = companyResult.insertId;
                                     const userObj = new User(data);
                                     query = `INSERT INTO users SET ?`;
-                                    conn.query(query, userObj, (err, userResult)=> {
-                                        if(err){
-                                            conn.rollback(()=> {
+                                    conn.query(query, userObj, (err, userResult) => {
+                                        if (err) {
+                                            conn.rollback(() => {
                                                 conn.release();
                                                 reject(err);
                                             })
@@ -163,9 +163,9 @@ User.Register = async(data)=> {
                                             const permissionObj = { user_id: userResult.insertId };
                                             const permission = new UserPermission(permissionObj);
                                             query = `INSERT INTO user_permission SET ?`;
-                                            conn.query(query, permission, (err, permissionResult)=> {
-                                                if(err) {
-                                                    conn.rollback(()=> {
+                                            conn.query(query, permission, (err, permissionResult) => {
+                                                if (err) {
+                                                    conn.rollback(() => {
                                                         conn.release();
                                                         reject(err);
                                                     })
@@ -173,16 +173,16 @@ User.Register = async(data)=> {
                                                     const portfolioObj = { company_id: companyResult.insertId, name: 'Portfolio 1' };
                                                     const portfolio = new Portfolio(portfolioObj);
                                                     query = `INSERT INTO portfolio SET ?`;
-                                                    conn.query(query, portfolio, (err, portfolioResult)=> {
-                                                        if(err){
-                                                            conn.rollback(()=> {
+                                                    conn.query(query, portfolio, (err, portfolioResult) => {
+                                                        if (err) {
+                                                            conn.rollback(() => {
                                                                 conn.release();
                                                                 reject(err);
                                                             })
                                                         } else {
-                                                            conn.commit((err)=> {
-                                                                if(err) {
-                                                                    conn.rollback(()=> {
+                                                            conn.commit((err) => {
+                                                                if (err) {
+                                                                    conn.rollback(() => {
                                                                         conn.release();
                                                                         reject(err);
                                                                     })
@@ -209,12 +209,74 @@ User.Register = async(data)=> {
     })
 }
 
-User.getPermissions = async(id)=> {
-    return new Promise((resolve, reject)=> {
+User.CustomerRegister = async (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            db.getConnection((err, conn) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    conn.beginTransaction(async (err) => {
+                        if (err) {
+                            conn.rollback(() => {
+                                conn.release();
+                                reject(err);
+                            })
+                        } else {
+                            const salt = await bcrypt.genSalt(10);
+                            const hashedPassword = await bcrypt.hash(data.password, salt);
+                            data.password = hashedPassword;
+                            data.company_id = -1;
+                            const userObj = new User(data);
+                            let query = `INSERT INTO users SET ?`;
+                            db.query(query, userObj, (err, userResult) => {
+                                if (err) {
+                                    conn.rollback(() => {
+                                        conn.release();
+                                        reject(err);
+                                    })
+                                } else {
+                                    const permissionObj = { user_id: userResult.insertId };
+                                    const permission = new UserPermission(permissionObj);
+                                    query = `INSERT INTO user_permission SET ?`;
+                                    conn.query(query, permission, (err, permissionResult) => {
+                                        if (err) {
+                                            conn.rollback(() => {
+                                                conn.release();
+                                                reject(err);
+                                            })
+                                        } else {
+                                            conn.commit((err) => {
+                                                if (err) {
+                                                    conn.rollback(() => {
+                                                        conn.release();
+                                                        reject(err);
+                                                    })
+                                                } else {
+                                                    conn.release();
+                                                    resolve(userResult);
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+User.getPermissions = async (id) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT * FROM user_permission WHERE user_id = ${id}`;
-            db.query(query, (err, sqlresult)=> {
-                if(err){
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult)
@@ -226,13 +288,13 @@ User.getPermissions = async(id)=> {
     })
 }
 
-User.getUserById = async(id)=> {
-    return new Promise((resolve, reject)=> {
+User.getUserById = async (id) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT users.id as user_id, users.first_name, users.last_name, users.email, users.phone_number,
                  users.is_admin, users.user_type, users.company_id, users.is_customer FROM users WHERE id = ${id}`;
-            db.query(query, (err, sqlresult)=> {
-                if(err){
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult)
@@ -244,16 +306,16 @@ User.getUserById = async(id)=> {
     })
 }
 
-User.getUserByCompanyId = async(id, search)=> {
-    return new Promise((resolve, reject)=> {
+User.getUserByCompanyId = async (id, search) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT users.first_name, users.last_name, users.email, 
             users.phone_number, users.user_type FROM users WHERE company_id = ${id}
             ${search.length > 0 ? `&& CONCAT_WS('-',first_name,last_name,email, phone_number, user_type) LIKE 
             '%${search}%'` : ''}
             `;
-            db.query(query, (err, sqlresult)=> {
-                if(err){
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult)

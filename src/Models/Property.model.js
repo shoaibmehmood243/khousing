@@ -17,49 +17,49 @@ class Property {
 
     constructor(obj) {
         this.user_id = obj.user_id || 2,
-        this.portfolio_id = obj.portfolio_id,
-        this.company_id = obj.company_id,
-        this.property_type = obj.property_type,
-        this.address = obj.address,
-        this.latitude = obj.latitude,
-        this.longitude = obj.longitude,
-        this.reviews = obj.reviews,
-        this.sq_feet = obj.sq_feet,
-        this.created_at = obj.created_at || new Date().toISOString(),
-        this.updated_at = obj.updated_at || null,
-        this.is_active = obj.is_active || 1
+            this.portfolio_id = obj.portfolio_id,
+            this.company_id = obj.company_id,
+            this.property_type = obj.property_type,
+            this.address = obj.address,
+            this.latitude = obj.latitude,
+            this.longitude = obj.longitude,
+            this.reviews = obj.reviews,
+            this.sq_feet = obj.sq_feet,
+            this.created_at = obj.created_at || new Date().toISOString(),
+            this.updated_at = obj.updated_at || null,
+            this.is_active = obj.is_active || 1
     }
 }
 
-Property.Add = (property, propertyUnit)=> {
-    return new Promise((resolve, reject)=> {
+Property.Add = (property, propertyUnit) => {
+    return new Promise((resolve, reject) => {
         try {
-            db.getConnection((err, conn)=> {
-                if(err) {
+            db.getConnection((err, conn) => {
+                if (err) {
                     reject(err);
                 } else {
-                    conn.beginTransaction((err)=> {
-                        if(err) {
-                            conn.rollback(()=> {
+                    conn.beginTransaction((err) => {
+                        if (err) {
+                            conn.rollback(() => {
                                 conn.release();
                                 reject(err);
                             })
                         } else {
                             let query = `INSERT INTO property SET ?`;
-                            conn.query(query, property, (err, sqlresult)=> {
-                                if(err) {
+                            conn.query(query, property, (err, sqlresult) => {
+                                if (err) {
                                     conn.rollback(() => {
                                         conn.release();
                                         reject(err);
                                     });
                                 } else {
-                                    const temp1 = propertyUnit.map((units)=> {
-                                        return new Promise(async(res, req)=> {
+                                    const temp1 = propertyUnit.map((units) => {
+                                        return new Promise(async (res, req) => {
                                             let query2 = `INSERT INTO property_units SET ?`;
-                                            const propertyUnitTemp = {...(await units), property_id: sqlresult.insertId};
+                                            const propertyUnitTemp = { ...(await units), property_id: sqlresult.insertId };
                                             const propertyUnitObj = new PropertyUnit(propertyUnitTemp);
-                                            conn.query(query2, propertyUnitObj, (err, sqlresult2)=> {
-                                                if(err) {
+                                            conn.query(query2, propertyUnitObj, (err, sqlresult2) => {
+                                                if (err) {
                                                     conn.rollback(() => {
                                                         conn.release();
                                                         reject(err);
@@ -68,19 +68,19 @@ Property.Add = (property, propertyUnit)=> {
                                                 } else {
                                                     res(true);
                                                     Promise.all(temp1)
-                                                        .then((promiseReturn)=> {
-                                                            if(promiseReturn.indexOf(false) == -1) {
+                                                        .then((promiseReturn) => {
+                                                            if (promiseReturn.indexOf(false) == -1) {
                                                                 conn.commit((err) => {
                                                                     if (err) {
-                                                                      conn.rollback(() => {
-                                                                        conn.release();
-                                                                        reject(err);
-                                                                      });
+                                                                        conn.rollback(() => {
+                                                                            conn.release();
+                                                                            reject(err);
+                                                                        });
                                                                     } else {
-                                                                      conn.release();
-                                                                      resolve({
-                                                                        data: sqlresult.insertId,
-                                                                      });
+                                                                        conn.release();
+                                                                        resolve({
+                                                                            data: sqlresult.insertId,
+                                                                        });
                                                                     }
                                                                 });
                                                             } else {
@@ -92,8 +92,8 @@ Property.Add = (property, propertyUnit)=> {
                                                         })
                                                         .catch(() => {
                                                             conn.rollback(() => {
-                                                              conn.release();
-                                                              reject(new Error("Error in promise"));
+                                                                conn.release();
+                                                                reject(new Error("Error in promise"));
                                                             });
                                                         });
                                                 }
@@ -112,13 +112,13 @@ Property.Add = (property, propertyUnit)=> {
     })
 }
 
-Property.get = (id, search)=> {
-    return new Promise((resolve, reject)=> {
+Property.get = (id, search) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT id, address, latitude, longitude, property_type FROM property
             WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
-            db.query(query, (err, sqlresult)=> {
-                if(err) {
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult);
@@ -130,8 +130,8 @@ Property.get = (id, search)=> {
     })
 }
 
-Property.getPropertyByLease = (id, search)=> {
-    return new Promise((resolve, reject)=> {
+Property.getPropertyByLease = (id, search) => {
+    return new Promise((resolve, reject) => {
         try {
             const query = `SELECT p.id, p.address, p.latitude, p.longitude, p.property_type 
             FROM property AS p
@@ -139,8 +139,47 @@ Property.getPropertyByLease = (id, search)=> {
             WHERE p.company_id = ${id} ${search.length > 0 ? `AND p.address LIKE '%182%'` : ''}
             AND l.property_id IS NULL
             `;
-            db.query(query, (err, sqlresult)=> {
-                if(err) {
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+Property.getCustomerPayments = async (email) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_end_date, 
+            leases.lease_start_date as created_at,
+            GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name)
+                         SEPARATOR ', ') as residents,
+            payments.id, payments.current_balance, payments.monthly_rent_amount,
+            payments.amount_received, payments.monthly_due_day,
+            IFNULL(transactions.id, '') as transaction_id, IFNULL(transactions.created_at, '') as transaction_created_at,
+            IFNULL(transactions.amount, '') as transaction_amount, IFNULL(transactions.payees, '') as payees
+            FROM leases
+            JOIN property ON property.id = leases.property_id
+            JOIN residents ON residents.lease_id = leases.id
+            LEFT JOIN payments ON payments.lease_id = leases.id
+            LEFT JOIN transactions ON transactions.payment_id = payments.id
+            WHERE residents.email = '${email}' && leases.is_active = 1
+            AND (
+            transactions.created_at = (
+                SELECT MAX(created_at)
+                FROM transactions
+                WHERE transactions.payment_id = payments.id
+            )
+            OR transactions.id IS NULL
+            )
+            GROUP BY leases.id, payments.id`;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
                     reject(err);
                 } else {
                     resolve(sqlresult);

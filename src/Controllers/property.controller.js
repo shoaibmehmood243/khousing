@@ -41,7 +41,19 @@ const controller = {
         } catch (error) {
             next(error);
         }
-    }
+    },
+    getCustomerPayments: async(req, res, next)=> {
+        try {
+            const response = await Property.getCustomerPayments(req.body.email);
+            if(response) {
+                res.status(200).send({status: true,data: response});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
+        } catch (error) {
+            next(error);
+        }
+    },
 }
 
 module.exports = controller;
