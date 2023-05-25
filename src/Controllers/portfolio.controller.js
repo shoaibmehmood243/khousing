@@ -37,6 +37,14 @@ const portfolioController = {
             next(error);
         }
     },
+    update: async(req, res, next)=> {
+        try {
+            const data = await Portfolio.update(req.params.id,req.body.name);
+            res.status(200).send({status: true, data: data});
+        } catch (error) {
+            next(error);
+        }
+    },
 }
 
 module.exports = portfolioController;

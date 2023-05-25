@@ -29,7 +29,7 @@ class PaymentMethods {
         this.apartment = obj.apartment,
         this.city = obj.city,
         this.zip = obj.zip,
-        this.zip = obj.zip,
+        this.state = obj.state,
         this.is_active = obj.is_active || 1,
         this.created_at = obj.created_at || new Date().toISOString(),
         this.updated_at = obj.updated_at || null

@@ -28,6 +28,19 @@ const controller = {
             next(error);
         }
     },
+    delete: async(req, res, next)=> {
+        try {
+            const id = req.params.id;
+            const response = await Property.delete(id);
+            if(response) {
+                res.status(200).send({status: true,data: response});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
+        } catch (error) {
+            next(error);
+        }
+    },
     getPropertyByLease: async(req, res, next)=> {
         try {
             const id = req.params.id;

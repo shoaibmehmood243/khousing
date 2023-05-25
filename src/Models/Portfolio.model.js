@@ -36,7 +36,7 @@ Portfolio.getByUserId = async(id)=> {
 Portfolio.getByCompany = async(id, search)=> {
     return new Promise((resolve, reject)=> {
         try {
-            const query = `SELECT COUNT(p.id) AS properties, pf.name AS portfolio_name
+            const query = `SELECT COUNT(p.id) AS properties, pf.id as id, pf.name AS portfolio_name
             FROM portfolio pf
             LEFT JOIN property p ON p.portfolio_id = pf.id
             WHERE pf.company_id = ${id} ${search.length > 0 ? `&& pf.name LIKE '%${search}%'` : ''}
@@ -59,6 +59,23 @@ Portfolio.add = async(data)=> {
     return new Promise((resolve, reject)=> {
         try {
             const query = `INSERT INTO portfolio SET ?`;
+            db.query(query, data, (err, sqlresult)=> {
+                if(err){
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+Portfolio.update = async(id,data)=> {
+    return new Promise((resolve, reject)=> {
+        try {
+            const query = `UPDATE portfolio SET name = '${data}' where id = ${id}`;
             db.query(query, data, (err, sqlresult)=> {
                 if(err){
                     reject(err);

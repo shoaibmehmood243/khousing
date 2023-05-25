@@ -130,6 +130,23 @@ Property.get = (id, search) => {
     })
 }
 
+Property.delete = (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `DELETE FROM property WHERE id = ${id}`;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 Property.getPropertyByLease = (id, search) => {
     return new Promise((resolve, reject) => {
         try {

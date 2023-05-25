@@ -15,8 +15,8 @@ class Payment {
     security_deposit_amount;
     security_deposit_amount_submitted;
     security_deposit_due;
+    payment_method_id;
     checking_account;
-    routing_number;
     first_name;
     last_name;
     security_deposit_account_number;
@@ -29,7 +29,7 @@ class Payment {
         this.lease_id = obj.lease_id,
             this.monthly_rent_amount = obj.monthly_rent_amount,
             this.amount_received = obj.amount_received || '0',
-            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) + Number(obj.late_fee_amount) + Number(obj.security_deposit_amount) ,
+            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) ,
             this.monthly_due_day = obj.monthly_due_day,
             this.recurring_rent_start = obj.recurring_rent_start,
             this.prorated_rent_amount = obj.prorated_rent_amount,
@@ -40,8 +40,8 @@ class Payment {
             this.security_deposit_amount = obj.security_deposit_amount,
             this.security_deposit_amount_submitted = obj.security_deposit_amount_submitted || 0,
             this.security_deposit_due = obj.security_deposit_due,
+            this.payment_method_id = obj.payment_method_id,
             this.checking_account = obj.checking_account,
-            this.routing_number = obj.routing_number,
             this.first_name = obj.first_name,
             this.last_name = obj.last_name,
             this.security_deposit_account_number = obj.security_deposit_account_number,

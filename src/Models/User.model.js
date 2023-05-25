@@ -170,27 +170,15 @@ User.Register = async (data) => {
                                                         reject(err);
                                                     })
                                                 } else {
-                                                    const portfolioObj = { company_id: companyResult.insertId, name: 'Portfolio 1' };
-                                                    const portfolio = new Portfolio(portfolioObj);
-                                                    query = `INSERT INTO portfolio SET ?`;
-                                                    conn.query(query, portfolio, (err, portfolioResult) => {
+                                                    conn.commit((err) => {
                                                         if (err) {
                                                             conn.rollback(() => {
                                                                 conn.release();
                                                                 reject(err);
                                                             })
                                                         } else {
-                                                            conn.commit((err) => {
-                                                                if (err) {
-                                                                    conn.rollback(() => {
-                                                                        conn.release();
-                                                                        reject(err);
-                                                                    })
-                                                                } else {
-                                                                    conn.release();
-                                                                    resolve(userResult);
-                                                                }
-                                                            })
+                                                            conn.release();
+                                                            resolve(userResult);
                                                         }
                                                     })
                                                 }
