@@ -280,7 +280,7 @@ User.getUserById = async (id) => {
     return new Promise((resolve, reject) => {
         try {
             const query = `SELECT users.id as user_id, users.first_name, users.last_name, users.email, users.phone_number,
-                 users.is_admin, users.user_type, users.company_id, users.is_customer FROM users WHERE id = ${id}`;
+                 users.is_admin, users.is_secondary, users.user_type, users.company_id, users.is_customer FROM users WHERE id = ${id}`;
             db.query(query, (err, sqlresult) => {
                 if (err) {
                     reject(err);

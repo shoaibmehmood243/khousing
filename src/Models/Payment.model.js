@@ -29,7 +29,7 @@ class Payment {
         this.lease_id = obj.lease_id,
             this.monthly_rent_amount = obj.monthly_rent_amount,
             this.amount_received = obj.amount_received || '0',
-            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) ,
+            this.current_balance = Number(obj.monthly_rent_amount) ,
             this.monthly_due_day = obj.monthly_due_day,
             this.recurring_rent_start = obj.recurring_rent_start,
             this.prorated_rent_amount = obj.prorated_rent_amount,
@@ -116,7 +116,9 @@ Payment.getById = async (id, paymentId, search) => {
                 leases.lease_start_date as created_at,
                 GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) 	
                 SEPARATOR ', ') as residents, payments.id, payments.current_balance, payments.monthly_rent_amount, 
-                payments.monthly_due_day, payments.late_fee_amount, payments.prorated_rent_amount, payments.security_deposit_amount
+                payments.monthly_due_day, payments.late_fee_amount, payments.prorated_rent_amount, 
+                DATE_FORMAT(payments.prorated_rent_due, '%M %e, %Y') AS prorated_rent_due,
+                payments.security_deposit_amount
                 FROM leases
                 JOIN property ON property.id = leases.property_id
                 JOIN residents ON residents.lease_id = leases.id
@@ -217,27 +219,31 @@ Payment.getUpcomingTransactions = async (id, leaseId) => {
             const query = `SELECT monthly_rent_amount AS charge, 
             DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
             'Monthly' AS details, amount_received AS payment, current_balance AS balance
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId}
-            
-            UNION ALL
-            
-            SELECT prorated_rent_amount AS charge, 
-            DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date, 
-            'Prorated rent' AS details, prorated_rent_amount_submitted AS payment, 
+        FROM payments
+        WHERE id = ${id} AND lease_id = ${leaseId}
+            AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)
+        
+        UNION ALL
+        
+        SELECT prorated_rent_amount AS charge,
+            DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date,
+            'Prorated rent' AS details, prorated_rent_amount_submitted AS payment,
             prorated_rent_amount - prorated_rent_amount_submitted AS balance
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId} AND prorated_rent_amount <> prorated_rent_amount_submitted
-            
-            UNION ALL
-            
-            SELECT security_deposit_amount AS charge, 
-            DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date, 
-            'Security Deposit' AS details, security_deposit_amount_submitted AS payment, 
+        FROM payments
+        WHERE id = ${id} AND lease_id = ${leaseId} 
+            AND prorated_rent_amount <> prorated_rent_amount_submitted
+            AND prorated_rent_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)
+        
+        UNION ALL
+        
+        SELECT security_deposit_amount AS charge,
+            DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date,
+            'Security Deposit' AS details, security_deposit_amount_submitted AS payment,
             security_deposit_amount - security_deposit_amount_submitted AS balance
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId} AND security_deposit_amount <> security_deposit_amount_submitted;
-            
+        FROM payments
+        WHERE id = ${id} AND lease_id = ${leaseId} 
+            AND security_deposit_amount <> security_deposit_amount_submitted
+            AND security_deposit_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY);        
             `;
             db.query(query, (err, sqlresult) => {
                 if (err) {

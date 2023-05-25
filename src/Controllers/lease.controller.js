@@ -20,7 +20,7 @@ const leaseController = {
             const leaseObj = {...req.body.lease, lease_end_date: lease_end_date.toISOString()}
             const newLeaseObj = new Lease(leaseObj);
             const data = await Lease.add(newLeaseObj, req.body.residents);
-            res.status(200).send({status: true, message: 'Resident setup successfully.'});
+            res.status(200).send({status: true, message: 'Resident setup successfully.', data});
         } catch (error) {
             next(error);
         }

@@ -174,7 +174,7 @@ Lease.add = async (leases, residents) => {
                                                                 } else {
                                                                     conn.release();
                                                                     resolve({
-                                                                        data: sqlresult2.insertId,
+                                                                        data: sqlresult1.insertId,
                                                                     });
                                                                 }
                                                             });
