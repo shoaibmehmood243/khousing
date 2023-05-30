@@ -208,4 +208,45 @@ Property.getCustomerPayments = async (email) => {
     })
 }
 
+Property.getCustomerPaymentsById = async (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT
+            payments.id,
+            payments.current_balance,
+            CASE
+              WHEN payments.monthly_due_day >= DAY(CURRENT_DATE()) THEN payments.monthly_rent_amount
+              WHEN payments.monthly_due_day + payments.late_fee_date >= DAY(CURRENT_DATE()) THEN payments.monthly_rent_amount
+              ELSE payments.monthly_rent_amount + payments.late_fee_amount
+            END AS total_amount_due,
+            payments.amount_received,
+            payments.monthly_due_day,
+            payments.late_fee_amount,
+            DATE_FORMAT(DATE_FORMAT(CURRENT_DATE(), '%Y-%m') + INTERVAL (payments.monthly_due_day - 1) DAY, '%Y-%m-%d') AS due_date,
+            payment_methods.id AS payment_method_id,
+            payment_methods.card_number,
+            payment_methods.routing_number
+          FROM
+            payments
+          JOIN
+            payment_methods ON payments.payment_method_id = payment_methods.id
+          WHERE
+            payments.id = ${id}
+          GROUP BY
+            payments.id
+          
+            `;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult);
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 module.exports = Property;

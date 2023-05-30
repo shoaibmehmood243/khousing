@@ -67,6 +67,18 @@ const controller = {
             next(error);
         }
     },
+    getCustomerPaymentsById: async(req, res, next)=> {
+        try {
+            const response = await Property.getCustomerPaymentsById(req.params.id);
+            if(response) {
+                res.status(200).send({status: true,data: response});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
+        } catch (error) {
+            next(error);
+        }
+    },
 }
 
 module.exports = controller;
