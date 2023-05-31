@@ -132,11 +132,18 @@ app.post('/plaid/auth-callback', async (req, res) => {
             access_token: accessToken,
         };
         const plaidResponse = await plaidClient.authGet(plaidRequest);
+        // const request = {
+        //     access_token: accessToken,
+        //     account_id: accountId,
+        //     processor: 'dwolla',
+        //   };
+        // const dwollaProcessorTokenResponse = await plaidClient.processorTokenCreate(request);
+        // console.log('---------',dwollaProcessorTokenResponse);
         // Create a Dwolla customer
         const customerResponse = await dwolla.post('https://api-sandbox.dwolla.com/customers', {
             firstName: 'John',
             lastName: 'Doe',
-            email: 'new53@example.com',
+            email: 'new2689@example.com',
             type: 'personal', // or 'business' for business customers
             address1: '123 Main St',
             city: 'Anytown',
