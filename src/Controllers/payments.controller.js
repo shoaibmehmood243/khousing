@@ -80,6 +80,23 @@ const paymentController = {
             next(error);
         }
     },
+    checkout: async(req, res, next)=> {
+        try {
+            const transactionData = {
+                amount: req.body.amount,
+                payment_id: req.body.payment_id
+            }
+            const transactionObj = new Transactions(transactionData);
+            const response = await Payment.RecordPayment(transactionObj);
+            if(response) {
+                res.status(200).send({status: true,message: 'Transaction logged successfully.'});
+            } else {
+                res.status(200).send({status: false,message: 'Something went wrong.'});
+            }
+        } catch (error) {
+            next(error);
+        }
+    },
 }
 
 module.exports = paymentController;

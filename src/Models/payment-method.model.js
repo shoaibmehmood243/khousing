@@ -3,6 +3,7 @@ const db = require('./../Utilities/dbConfig');
 class PaymentMethods {
     user_id;
     type;
+    funding_source;
     card_name;
     card_number;
     routing_number;
@@ -20,6 +21,7 @@ class PaymentMethods {
     constructor(obj) {
         this.user_id = obj.user_id,
         this.type = obj.type,
+        this.funding_source = obj.funding_source,
         this.card_name = obj.card_name,
         this.card_number = obj.card_number,
         this.routing_number = obj.routing_number,

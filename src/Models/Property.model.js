@@ -222,7 +222,7 @@ Property.getCustomerPaymentsById = async (id) => {
             payments.amount_received,
             payments.monthly_due_day,
             payments.late_fee_amount,
-            DATE_FORMAT(DATE_FORMAT(CURRENT_DATE(), '%Y-%m') + INTERVAL (payments.monthly_due_day - 1) DAY, '%Y-%m-%d') AS due_date,
+            DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE(), '%Y-%m-01'), INTERVAL (payments.monthly_due_day - 1) DAY), '%Y-%m-%d') AS due_date,
             payment_methods.id AS payment_method_id,
             payment_methods.card_number,
             payment_methods.routing_number
@@ -233,7 +233,8 @@ Property.getCustomerPaymentsById = async (id) => {
           WHERE
             payments.id = ${id}
           GROUP BY
-            payments.id
+            payments.id;
+          
           
             `;
             db.query(query, (err, sqlresult) => {
