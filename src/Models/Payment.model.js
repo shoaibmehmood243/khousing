@@ -283,4 +283,24 @@ Payment.getTransactions = async (id, leaseId) => {
     })
 }
 
+Payment.getPaymentById = async (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT payment_methods.id,  payment_methods.funding_source FROM payments
+            JOIN payment_methods
+            ON payments.payment_method_id = payment_methods.id
+            WHERE payments.id = ${id}`;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 module.exports = { Payment, Transactions };
