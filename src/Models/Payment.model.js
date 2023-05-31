@@ -29,7 +29,7 @@ class Payment {
         this.lease_id = obj.lease_id,
             this.monthly_rent_amount = obj.monthly_rent_amount,
             this.amount_received = obj.amount_received || '0',
-            this.current_balance = Number(obj.monthly_rent_amount) ,
+            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) + Number(obj.security_deposit_amount) ,
             this.monthly_due_day = obj.monthly_due_day,
             this.recurring_rent_start = obj.recurring_rent_start,
             this.prorated_rent_amount = obj.prorated_rent_amount,
@@ -218,7 +218,7 @@ Payment.getUpcomingTransactions = async (id, leaseId) => {
         try {
             const query = `SELECT monthly_rent_amount AS charge, 
             DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
-            'Monthly' AS details, amount_received AS payment, current_balance AS balance
+            'Monthly' AS details, amount_received AS payment, monthly_rent_amount - amount_received AS balance
         FROM payments
         WHERE id = ${id} AND lease_id = ${leaseId}
             AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)
