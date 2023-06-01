@@ -29,7 +29,7 @@ class Payment {
         this.lease_id = obj.lease_id,
             this.monthly_rent_amount = obj.monthly_rent_amount,
             this.amount_received = obj.amount_received || '0',
-            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) + Number(obj.security_deposit_amount) ,
+            this.current_balance = Number(obj.monthly_rent_amount) + Number(obj.prorated_rent_amount) + Number(obj.security_deposit_amount),
             this.monthly_due_day = obj.monthly_due_day,
             this.recurring_rent_start = obj.recurring_rent_start,
             this.prorated_rent_amount = obj.prorated_rent_amount,
@@ -112,21 +112,38 @@ Payment.get = async (id, search) => {
 Payment.getById = async (id, paymentId, search) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_end_date, 
-                leases.lease_start_date as created_at,
-                GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) 	
-                SEPARATOR ', ') as residents, payments.id, payments.current_balance, payments.monthly_rent_amount, 
-                payments.monthly_due_day, payments.late_fee_amount, payments.prorated_rent_amount, 
-                DATE_FORMAT(payments.prorated_rent_due, '%M %e, %Y') AS prorated_rent_due,
-                payments.security_deposit_amount
-                FROM leases
-                JOIN property ON property.id = leases.property_id
-                JOIN residents ON residents.lease_id = leases.id
-                JOIN payments ON payments.lease_id = leases.id
-                WHERE property.company_id = ${id} && payments.id = ${paymentId} && leases.is_active = 1
-                ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
-                '%${search}%'` : ''}
-                GROUP BY leases.id`;
+            const query = `SELECT leases.id AS lease_id, 
+            property.address AS address, 
+            leases.lease_end_date, 
+            leases.lease_start_date AS created_at,
+            GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) SEPARATOR ', ') AS residents, 
+            payments.id, 
+            payments.current_balance, 
+            payments.monthly_rent_amount,
+            payments.monthly_due_day, 
+            payments.late_fee_amount, 
+            payments.prorated_rent_amount,
+            DATE_FORMAT(payments.prorated_rent_due, '%M %e, %Y') AS prorated_rent_due,
+            payments.security_deposit_amount,
+            CASE
+                WHEN leases.lease_end_date < CURDATE() THEN 
+                    CASE
+                        WHEN DATEDIFF(CURDATE(), leases.lease_end_date) > payments.late_fee_date THEN 
+                            payments.current_balance + payments.late_fee_amount
+                        ELSE
+                            payments.current_balance
+                    END
+                ELSE payments.current_balance
+            END AS total_payment
+            FROM leases
+            JOIN property ON property.id = leases.property_id
+            JOIN residents ON residents.lease_id = leases.id
+            JOIN payments ON payments.lease_id = leases.id
+            WHERE property.company_id = ${id} && payments.id = ${paymentId} && leases.is_active = 1
+            ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
+            '%${search}%'` : ''}
+            GROUP BY leases.id;
+            `;
             db.query(query, (err, sqlresult) => {
                 if (err) {
                     reject(err);
@@ -218,32 +235,45 @@ Payment.getUpcomingTransactions = async (id, leaseId) => {
         try {
             const query = `SELECT monthly_rent_amount AS charge, 
             DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
-            'Monthly' AS details, amount_received AS payment, monthly_rent_amount - amount_received AS balance
-        FROM payments
-        WHERE id = ${id} AND lease_id = ${leaseId}
-            AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)
+            'Monthly' AS details,
+            CASE
+                WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN monthly_rent_amount - amount_received
+                ELSE 0
+            END AS balance,
+            amount_received AS payment
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId}
+            AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
         
-        UNION ALL
-        
-        SELECT prorated_rent_amount AS charge,
+            UNION ALL
+            
+            SELECT prorated_rent_amount AS charge,
             DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date,
-            'Prorated rent' AS details, prorated_rent_amount_submitted AS payment,
-            prorated_rent_amount - prorated_rent_amount_submitted AS balance
-        FROM payments
-        WHERE id = ${id} AND lease_id = ${leaseId} 
+            'Prorated rent' AS details,
+            CASE
+                WHEN prorated_rent_due < CURDATE() THEN prorated_rent_amount - prorated_rent_amount_submitted
+                ELSE 0
+            END AS balance,
+            prorated_rent_amount_submitted AS payment
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId}
             AND prorated_rent_amount <> prorated_rent_amount_submitted
-            AND prorated_rent_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY)
+            AND prorated_rent_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
         
-        UNION ALL
-        
-        SELECT security_deposit_amount AS charge,
+            UNION ALL
+            
+            SELECT security_deposit_amount AS charge,
             DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date,
-            'Security Deposit' AS details, security_deposit_amount_submitted AS payment,
-            security_deposit_amount - security_deposit_amount_submitted AS balance
-        FROM payments
-        WHERE id = ${id} AND lease_id = ${leaseId} 
+            'Security Deposit' AS details,
+            CASE
+                WHEN security_deposit_due < CURDATE() THEN security_deposit_amount - security_deposit_amount_submitted
+                ELSE 0
+            END AS balance,
+            security_deposit_amount_submitted AS payment
+            FROM payments
+            WHERE id = ${id} AND lease_id = ${leaseId}
             AND security_deposit_amount <> security_deposit_amount_submitted
-            AND security_deposit_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY);        
+            AND security_deposit_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY);
             `;
             db.query(query, (err, sqlresult) => {
                 if (err) {
@@ -262,9 +292,11 @@ Payment.getTransactions = async (id, leaseId) => {
     return new Promise((resolve, reject) => {
         try {
             const query = `SELECT DATE_FORMAT(transactions.created_at, '%M %e, %Y') AS date, 
-            leases.lease_term, 
-            payments.monthly_rent_amount AS charge,
-            transactions.amount AS payment, payments.amount_received AS balance
+            leases.lease_term, payments.monthly_rent_amount AS charge, transactions.amount AS payment,
+            CASE
+            WHEN transactions.created_at < CURDATE() THEN payments.amount_received
+            ELSE 0
+            END AS balance
             FROM payments
             JOIN leases ON leases.id = payments.lease_id
             INNER JOIN transactions ON transactions.payment_id = payments.id

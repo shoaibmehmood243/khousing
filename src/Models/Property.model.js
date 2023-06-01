@@ -6,6 +6,7 @@ class Property {
     portfolio_id;
     company_id;
     property_type;
+    apartment;
     address;
     latitude;
     longitude;
@@ -20,6 +21,7 @@ class Property {
             this.portfolio_id = obj.portfolio_id,
             this.company_id = obj.company_id,
             this.property_type = obj.property_type,
+            this.apartment = obj.apartment,
             this.address = obj.address,
             this.latitude = obj.latitude,
             this.longitude = obj.longitude,
