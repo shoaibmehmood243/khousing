@@ -38,11 +38,11 @@ const controller = {
         try {
             const emailRes = await User.getByEmail(req.body.email);
             if(emailRes.length === 0) {
-                res.status(200).send({status: false,message: 'User with this email is not registered. Please register with us.'})
+                res.status(404).send({status: false,message: 'User with this email is not registered. Please register with us.'})
             } else {
                 await comparePassword(req.body.password,emailRes[0].password, async(err, passwordRes)=> {
                     if(err) {
-                        res.status(200).send({status: false,message: 'Invalid email/password. Please try again.'})
+                        res.status(404).send({status: false,message: 'Invalid email/password. Please try again.'})
                     } else {
                         const accessToken = await signAccessToken(emailRes[0].id);
                         const refreshToken = await signRefreshToken(emailRes[0].id);

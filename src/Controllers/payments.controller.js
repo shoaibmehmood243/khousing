@@ -87,26 +87,34 @@ const paymentController = {
                 amount: req.body.amount,
                 payment_id: req.body.payment_id
             }
-            // const paymentData = await Payment.getPaymentById(transactionData.payment_id);
-            // var requestBody = {
-            //     _links: {
-            //       source: {
-            //         href: req.body.funding_source,
-            //       },
-            //       destination: {
-            //         href: paymentData[0].funding_source,
-            //       },
-            //     },
-            //     amount: {
-            //       currency: "USD",
-            //       value: transactionData.amount,
-            //     },
-            // }
+            const paymentData = await Payment.getPaymentById(transactionData.payment_id);
+            var requestBody = {
+                _links: {
+                  source: {
+                    href: req.body.funding_source,
+                  },
+                  destination: {
+                    href: paymentData[0].funding_source,
+                  },
+                },
+                amount: {
+                  currency: "USD",
+                  value: transactionData.amount,
+                },
+            }
             // dwolla.post('transfers', requestBody)
-            //     .then((dRes)=> {
-            //         res.status(200).send({status: true,message: 'Something went wrong.'});
+            //     .then(async(dRes)=> {
+            //         console.log(dRes);
+            //         const transactionObj = new Transactions(transactionData);
+            //         const response = await Payment.RecordPayment(transactionObj);
+            //         if(response) {
+            //             res.status(200).send({status: true,message: 'Transaction logged successfully.'});
+            //         } else {
+            //             res.status(200).send({status: false,message: 'Something went wrong.'});
+            //         }
             //     })
             //     .catch((err)=> {
+            //         console.log(err);
             //         next(err);
             //     })
             const transactionObj = new Transactions(transactionData);

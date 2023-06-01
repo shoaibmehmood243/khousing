@@ -132,18 +132,17 @@ app.post('/plaid/auth-callback', async (req, res) => {
             access_token: accessToken,
         };
         const plaidResponse = await plaidClient.authGet(plaidRequest);
-        // const request = {
-        //     access_token: accessToken,
-        //     account_id: accountId,
-        //     processor: 'dwolla',
-        //   };
-        // const dwollaProcessorTokenResponse = await plaidClient.processorTokenCreate(request);
-        // console.log('---------',dwollaProcessorTokenResponse);
+        const request = {
+            access_token: accessToken,
+            account_id: accountId,
+            processor: 'dwolla',
+          };
+        const dwollaProcessorTokenResponse = await plaidClient.processorTokenCreate(request);
         // Create a Dwolla customer
         const customerResponse = await dwolla.post('https://api-sandbox.dwolla.com/customers', {
             firstName: 'John',
             lastName: 'Doe',
-            email: 'new2689@example.com',
+            email: 'testinguser1@example.com',
             type: 'personal', // or 'business' for business customers
             address1: '123 Main St',
             city: 'Anytown',
@@ -160,6 +159,7 @@ app.post('/plaid/auth-callback', async (req, res) => {
             accountNumber: plaidResponse.data.numbers.ach[0].account,
             bankAccountType: "checking",
             name: "Jane Doe's Checking",
+            plaidToken:  dwollaProcessorTokenResponse.data.processor_token
         });
         const requestData = {
             card_number: plaidResponse.data.numbers.ach[0].account, 
@@ -170,7 +170,6 @@ app.post('/plaid/auth-callback', async (req, res) => {
         const data = await PaymentMethods.add(paymentMethodObj);
         res.status(200).send({status: true, data: data});
     } catch (error) {
-        console.log(error);
         res.status(500).json({ error: 'Failed to handle Dwolla callback' });
     }
 });
