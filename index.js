@@ -142,7 +142,7 @@ app.post('/plaid/auth-callback', async (req, res) => {
         const customerResponse = await dwolla.post('https://api-sandbox.dwolla.com/customers', {
             firstName: 'John',
             lastName: 'Doe',
-            email: 'testinguser1@example.com',
+            email: 'testinguser2@example.com',
             type: 'personal', // or 'business' for business customers
             address1: '123 Main St',
             city: 'Anytown',
