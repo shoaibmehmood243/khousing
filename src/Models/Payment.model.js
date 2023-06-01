@@ -139,7 +139,7 @@ Payment.getById = async (id, paymentId, search) => {
             JOIN property ON property.id = leases.property_id
             JOIN residents ON residents.lease_id = leases.id
             JOIN payments ON payments.lease_id = leases.id
-            WHERE property.company_id = ${id} && payments.id = ${paymentId} && leases.is_active = 1
+            WHERE payments.id = ${paymentId} && leases.is_active = 1
             ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
             '%${search}%'` : ''}
             GROUP BY leases.id;
