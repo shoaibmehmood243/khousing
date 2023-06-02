@@ -35,90 +35,81 @@ class Property {
 
 Property.Add = (property, propertyUnit) => {
     return new Promise((resolve, reject) => {
-        try {
-            db.getConnection((err, conn) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    conn.beginTransaction((err) => {
-                        if (err) {
-                            conn.rollback(() => {
-                                conn.release();
-                                reject(err);
-                            })
-                        } else {
-                            let query = `INSERT INTO property SET ?`;
-                            conn.query(query, property, (err, sqlresult) => {
-                                if (err) {
-                                    conn.rollback(() => {
-                                        conn.release();
-                                        reject(err);
+        db.getConnection((err, conn) => {
+            if (err) {
+                reject(err);
+            } else {
+                conn.beginTransaction((err) => {
+                    if (err) {
+                        conn.rollback(() => {
+                            conn.release();
+                            reject(err);
+                        });
+                    } else {
+                        let query = `INSERT INTO property SET ?`;
+                        conn.query(query, property, (err, sqlresult) => {
+                            if (err) {
+                                conn.rollback(() => {
+                                    conn.release();
+                                    reject(err);
+                                });
+                            } else {
+                                const promises = propertyUnit.map((units) => {
+                                    return new Promise((resolve, reject) => {
+                                        let query2 = `INSERT INTO property_units SET ?`;
+                                        const propertyUnitTemp = { ...units, property_id: sqlresult.insertId };
+                                        const propertyUnitObj = new PropertyUnit(propertyUnitTemp);
+                                        conn.query(query2, propertyUnitObj, (err, sqlresult2) => {
+                                            if (err) {
+                                                reject(err);
+                                            } else {
+                                                resolve(true);
+                                            }
+                                        });
                                     });
-                                } else {
-                                    const temp1 = propertyUnit.map((units) => {
-                                        return new Promise(async (res, req) => {
-                                            let query2 = `INSERT INTO property_units SET ?`;
-                                            const propertyUnitTemp = { ...(await units), property_id: sqlresult.insertId };
-                                            const propertyUnitObj = new PropertyUnit(propertyUnitTemp);
-                                            conn.query(query2, propertyUnitObj, (err, sqlresult2) => {
-                                                if (err) {
-                                                    conn.rollback(() => {
-                                                        conn.release();
-                                                        reject(err);
-                                                        res(false)
-                                                    });
-                                                } else {
-                                                    res(true);
-                                                    Promise.all(temp1)
-                                                        .then((promiseReturn) => {
-                                                            if (promiseReturn.indexOf(false) == -1) {
-                                                                conn.commit((err) => {
-                                                                    if (err) {
-                                                                        conn.rollback(() => {
-                                                                            conn.release();
-                                                                            reject(err);
-                                                                        });
-                                                                    } else {
-                                                                        conn.release();
-                                                                        resolve({
-                                                                            data: sqlresult.insertId,
-                                                                        });
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                conn.rollback(() => {
-                                                                    conn.release();
-                                                                    reject(new Error("Error in commit"));
-                                                                });
-                                                            }
-                                                        })
-                                                        .catch(() => {
-                                                            conn.rollback(() => {
-                                                                conn.release();
-                                                                reject(new Error("Error in promise"));
-                                                            });
-                                                        });
-                                                }
-                                            })
-                                        })
+                                });
+
+                                Promise.all(promises)
+                                    .then(() => {
+                                        conn.commit((err) => {
+                                            if (err) {
+                                                conn.rollback(() => {
+                                                    conn.release();
+                                                    reject(err);
+                                                });
+                                            } else {
+                                                conn.release();
+                                                resolve({
+                                                    data: sqlresult.insertId,
+                                                });
+                                            }
+                                        });
                                     })
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        } catch (error) {
-            reject(error);
-        }
-    })
-}
+                                    .catch((err) => {
+                                        conn.rollback(() => {
+                                            conn.release();
+                                            reject(err);
+                                        });
+                                    });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+};
 
 Property.get = (id, search) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT id, address, latitude, longitude, property_type FROM property
-            WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}`;
+            const query = `SELECT property.id, property.address, property.latitude, 
+            property.longitude, property.property_type, COUNT(property_units.property_id) as units
+            FROM property
+            JOIN property_units
+            ON property_units.property_id = property.id
+            WHERE company_id = ${id} ${search.length > 0 ? `&& address LIKE '%${search}%'` : ''}
+            GROUP BY property.id`;
             db.query(query, (err, sqlresult) => {
                 if (err) {
                     reject(err);

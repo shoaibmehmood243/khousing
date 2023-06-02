@@ -56,11 +56,11 @@ Lease.get = async (id, tab, search) => {
             JOIN property ON property.id = leases.property_id
             JOIN residents ON residents.lease_id = leases.id
             WHERE property.company_id = ${id} && leases.is_active = 1
-            && ${tab === 1 ? 
-                `leases.lease_end_date > DATE_ADD(NOW(), INTERVAL 7 DAY)` : 
-                tab === 2 ? 
-                `leases.lease_end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)` : 
-                `leases.lease_end_date < NOW()`
+            && ${tab === 1 ?
+                    `leases.lease_end_date > DATE_ADD(NOW(), INTERVAL 7 DAY)` :
+                    tab === 2 ?
+                        `leases.lease_end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)` :
+                        `leases.lease_end_date < NOW()`
                 }
             ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
             '%${search}%'` : ''}
@@ -148,60 +148,51 @@ Lease.add = async (leases, residents) => {
                                     reject(err);
                                 });
                             } else {
-                                const temp1 = residents.map((resident) => {
-                                    return new Promise(async (res, rej) => {
-                                        const residentTemp = { ...(await resident), lease_id: sqlresult1.insertId };
+                                const promises = residents.map((resident) => {
+                                    return new Promise((resolve, reject) => {
+                                        const residentTemp = { ...resident, lease_id: sqlresult1.insertId };
                                         const residentObj = new Residents(residentTemp);
                                         let query2 = `INSERT INTO residents SET ?`;
                                         conn.query(query2, residentObj, (err, sqlresult2) => {
                                             if (err) {
+                                                reject(err);
+                                            } else {
+                                                resolve(true);
+                                            }
+                                        });
+                                    });
+                                });
+
+                                Promise.all(promises)
+                                    .then(() => {
+                                        conn.commit((err) => {
+                                            if (err) {
                                                 conn.rollback(() => {
                                                     conn.release();
                                                     reject(err);
-                                                    res(false);
                                                 });
                                             } else {
-                                                res(true);
-                                                Promise.all(temp1)
-                                                    .then((promiseReturn) => {
-                                                        if (promiseReturn.indexOf(false) == -1) {
-                                                            conn.commit((err) => {
-                                                                if (err) {
-                                                                    conn.rollback(() => {
-                                                                        conn.release();
-                                                                        reject(err);
-                                                                    });
-                                                                } else {
-                                                                    conn.release();
-                                                                    resolve({
-                                                                        data: sqlresult1.insertId,
-                                                                    });
-                                                                }
-                                                            });
-                                                        } else {
-                                                            conn.rollback(() => {
-                                                                conn.release();
-                                                                reject(new Error("Error in commit"));
-                                                            });
-                                                        }
-                                                    })
-                                                    .catch((err) => {
-                                                        conn.rollback(() => {
-                                                            conn.release();
-                                                            reject(new Error("Error in promise"));
-                                                        });
-                                                    })
+                                                conn.release();
+                                                resolve({
+                                                    data: sqlresult1.insertId,
+                                                });
                                             }
-                                        })
+                                        });
                                     })
-                                })
+                                    .catch((err) => {
+                                        conn.rollback(() => {
+                                            conn.release();
+                                            reject(err);
+                                        });
+                                    });
                             }
-                        })
+                        });
                     }
-                })
+                });
             }
-        })
-    })
-}
+        });
+    });
+};
+
 
 module.exports = Lease;
