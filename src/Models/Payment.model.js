@@ -335,4 +335,21 @@ Payment.getPaymentById = async (id) => {
     })
 }
 
+Payment.getPayment = async (id) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const query = `SELECT * FROM payments WHERE id = ${id}`;
+            db.query(query, (err, sqlresult) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(sqlresult)
+                }
+            })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
 module.exports = { Payment, Transactions };
