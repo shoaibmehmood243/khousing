@@ -109,7 +109,8 @@ User.add = (data, permissions) => {
 User.getByEmail = (email) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT * FROM users WHERE email = '${email}'`;
+            const query = `SELECT users.id as user_id, users.first_name, users.password, users.last_name, users.email, users.phone_number,
+            users.is_admin, users.is_secondary, users.user_type, users.company_id, users.is_customer FROM users WHERE email = '${email}'`;
             db.query(query, (err, sqlresult) => {
                 if (err) {
                     reject(err);

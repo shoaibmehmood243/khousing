@@ -233,47 +233,52 @@ Payment.RecordPayment = async (transaction) => {
 Payment.getUpcomingTransactions = async (id, leaseId) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT monthly_rent_amount AS charge, 
-            DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
-            'Monthly' AS details,
-            CASE
-                WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN monthly_rent_amount - amount_received
-                ELSE 0
-            END AS balance,
-            amount_received AS payment
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId}
-            AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-        
-            UNION ALL
+            const query = `SELECT charge, date, details, balance, payment
+            FROM (
+                SELECT monthly_rent_amount AS charge,
+                       DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
+                       'Monthly Rent' AS details,
+                       CASE
+                           WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN monthly_rent_amount - amount_received
+                           ELSE 0
+                       END AS balance,
+                       amount_received AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                    
+                UNION ALL
+                    
+                SELECT prorated_rent_amount AS charge,
+                       DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date,
+                       'Prorated rent' AS details,
+                       CASE
+                           WHEN prorated_rent_due < CURDATE() THEN prorated_rent_amount - prorated_rent_amount_submitted
+                           ELSE 0
+                       END AS balance,
+                       prorated_rent_amount_submitted AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND prorated_rent_amount <> prorated_rent_amount_submitted
+                    AND prorated_rent_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                    
+                UNION ALL
+                    
+                SELECT security_deposit_amount AS charge,
+                       DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date,
+                       'Security Deposit' AS details,
+                       CASE
+                           WHEN security_deposit_due < CURDATE() THEN security_deposit_amount - security_deposit_amount_submitted
+                           ELSE 0
+                       END AS balance,
+                       security_deposit_amount_submitted AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND security_deposit_amount <> security_deposit_amount_submitted
+                    AND security_deposit_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+            ) AS result
+            ORDER BY STR_TO_DATE(date, '%M %e, %Y') ASC;
             
-            SELECT prorated_rent_amount AS charge,
-            DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date,
-            'Prorated rent' AS details,
-            CASE
-                WHEN prorated_rent_due < CURDATE() THEN prorated_rent_amount - prorated_rent_amount_submitted
-                ELSE 0
-            END AS balance,
-            prorated_rent_amount_submitted AS payment
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId}
-            AND prorated_rent_amount <> prorated_rent_amount_submitted
-            AND prorated_rent_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-        
-            UNION ALL
-            
-            SELECT security_deposit_amount AS charge,
-            DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date,
-            'Security Deposit' AS details,
-            CASE
-                WHEN security_deposit_due < CURDATE() THEN security_deposit_amount - security_deposit_amount_submitted
-                ELSE 0
-            END AS balance,
-            security_deposit_amount_submitted AS payment
-            FROM payments
-            WHERE id = ${id} AND lease_id = ${leaseId}
-            AND security_deposit_amount <> security_deposit_amount_submitted
-            AND security_deposit_due BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY);
             `;
             db.query(query, (err, sqlresult) => {
                 if (err) {
@@ -291,16 +296,70 @@ Payment.getUpcomingTransactions = async (id, leaseId) => {
 Payment.getTransactions = async (id, leaseId) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT DATE_FORMAT(transactions.created_at, '%M %e, %Y') AS date, 
-            leases.lease_term, payments.monthly_rent_amount AS charge, transactions.amount AS payment,
-            CASE
-            WHEN transactions.created_at < CURDATE() THEN payments.amount_received
-            ELSE 0
-            END AS balance
-            FROM payments
-            JOIN leases ON leases.id = payments.lease_id
-            INNER JOIN transactions ON transactions.payment_id = payments.id
-            WHERE payments.id = ${id} AND leases.id = ${leaseId};
+            const query = `SELECT charge, date, details, balance, payment
+            FROM (
+                SELECT monthly_rent_amount AS charge,
+                       DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
+                       'Monthly Rent' AS details,
+                       CASE
+                           WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN monthly_rent_amount - amount_received
+                           ELSE 0
+                       END AS balance,
+                       amount_received AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') < CURDATE()
+                    AND DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                    
+                UNION ALL
+                    
+                SELECT prorated_rent_amount AS charge,
+                       DATE_FORMAT(prorated_rent_due, '%M %e, %Y') AS date,
+                       'Prorated rent' AS details,
+                       CASE
+                           WHEN prorated_rent_due < CURDATE() THEN prorated_rent_amount - prorated_rent_amount_submitted
+                           ELSE 0
+                       END AS balance,
+                       prorated_rent_amount_submitted AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND prorated_rent_amount <> prorated_rent_amount_submitted
+                    AND prorated_rent_due < CURDATE()
+                    AND prorated_rent_due >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                    
+                UNION ALL
+                    
+                SELECT security_deposit_amount AS charge,
+                       DATE_FORMAT(security_deposit_due, '%M %e, %Y') AS date,
+                       'Security Deposit' AS details,
+                       CASE
+                           WHEN security_deposit_due < CURDATE() THEN security_deposit_amount - security_deposit_amount_submitted
+                           ELSE 0
+                       END AS balance,
+                       security_deposit_amount_submitted AS payment
+                FROM payments
+                WHERE id = ${id} AND lease_id = ${leaseId}
+                    AND security_deposit_amount <> security_deposit_amount_submitted
+                    AND security_deposit_due < CURDATE()
+                    AND security_deposit_due >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                    
+                UNION ALL
+                
+                SELECT b.amount AS charge,
+                       DATE_FORMAT(b.due_date, '%M %e, %Y') AS date,
+                       'Bill' AS details,
+                       0 AS balance,
+                       0 AS payment
+                FROM payments p
+                JOIN bills b ON p.id = b.payment_id
+                WHERE p.id = ${id} AND p.lease_id = ${leaseId}
+                    AND b.due_date < CURDATE()
+                    AND b.due_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            ) AS result
+            ORDER BY STR_TO_DATE(date, '%M %e, %Y') DESC;
+            
+             
+        
             `;
             db.query(query, (err, sqlresult) => {
                 if (err) {

@@ -44,8 +44,8 @@ const controller = {
                     if(err) {
                         res.status(404).send({status: false,message: 'Invalid email/password. Please try again.'})
                     } else {
-                        const accessToken = await signAccessToken(emailRes[0].id);
-                        const refreshToken = await signRefreshToken(emailRes[0].id);
+                        const accessToken = await signAccessToken(emailRes[0].user_id);
+                        const refreshToken = await signRefreshToken(emailRes[0].user_id);
                         res.cookie('accessToken', `bearer ${accessToken}`,{
                             httpOnly: false,
                             maxAge: 24 * 60 * 60 * 1000,
