@@ -236,8 +236,8 @@ Payment.getUpcomingTransactions = async (id, leaseId) => {
             const query = `SELECT charge, date, details, balance, payment
             FROM (
                 SELECT monthly_rent_amount AS charge,
-                       DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
-                       'Monthly' AS details,
+                DATE_FORMAT(DATE_ADD(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH), INTERVAL monthly_due_day - 1 DAY), '%M %e, %Y') AS date,
+                'Monthly' AS details,
                        CASE
                            WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN current_balance
                            ELSE 0
@@ -313,8 +313,7 @@ Payment.getTransactions = async (id, leaseId) => {
             const query = `SELECT charge, date, details, balance, payment
             FROM (
                 SELECT monthly_rent_amount AS charge,
-                       DATE_FORMAT(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY, '%M %e, %Y') AS date,
-                       'Monthly Rent' AS details,
+                DATE_FORMAT(DATE_ADD(DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH), INTERVAL monthly_due_day - 1 DAY), '%M %e, %Y') AS date,                       'Monthly Rent' AS details,
                        CASE
                            WHEN DATE_ADD(DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'), INTERVAL 1 MONTH) - INTERVAL 1 DAY < CURDATE() THEN current_balance
                            ELSE 0
