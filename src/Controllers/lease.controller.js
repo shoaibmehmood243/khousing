@@ -11,14 +11,7 @@ function addMonths(date, monthsToAdd) {
 const leaseController = {
     add: async (req, res, next) => {
         try {
-            let lease_end_date;
-            if (req.body.lease.lease_length) {
-                lease_end_date = addMonths(req.body.lease.lease_start_date, req.body.lease.lease_length.split(' ')[0])
-            } else {
-                lease_end_date = addMonths(req.body.lease.lease_start_date, 1);
-            }
-            const leaseObj = {...req.body.lease, lease_end_date: lease_end_date.toISOString()}
-            const newLeaseObj = new Lease(leaseObj);
+            const newLeaseObj = new Lease(req.body.lease);
             const data = await Lease.add(newLeaseObj, req.body.residents);
             res.status(200).send({status: true, message: 'Resident setup successfully.', data});
         } catch (error) {

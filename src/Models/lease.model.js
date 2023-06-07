@@ -5,7 +5,6 @@ class Lease {
     lease_term;
     lease_start_date;
     lease_end_date;
-    lease_length;
     is_active;
     created_at;
     updated_at;
@@ -15,7 +14,6 @@ class Lease {
             this.lease_term = obj.lease_term,
             this.lease_start_date = obj.lease_start_date,
             this.lease_end_date = obj.lease_end_date,
-            this.lease_length = obj.lease_length,
             this.is_active = obj.is_active || 1,
             this.created_at = obj.created_at || new Date().toISOString(),
             this.updated_at = obj.updated_at || null
@@ -49,7 +47,7 @@ class Residents {
 Lease.get = async (id, tab, search) => {
     return new Promise((resolve, reject) => {
         try {
-            const query = `SELECT leases.id as lease_id, property.address as address, leases.lease_end_date, 
+            const query = `SELECT leases.id as lease_id, property.address as address,leases.lease_start_date, leases.lease_end_date, 
             leases.lease_start_date as created_at,
             GROUP_CONCAT(CONCAT(residents.first_name, ' ', residents.middle_name, ' ', residents.last_name) SEPARATOR ', ') as residents
             FROM leases
@@ -57,10 +55,15 @@ Lease.get = async (id, tab, search) => {
             JOIN residents ON residents.lease_id = leases.id
             WHERE property.company_id = ${id} && leases.is_active = 1
             && ${tab === 1 ?
-                    `leases.lease_end_date > DATE_ADD(NOW(), INTERVAL 7 DAY)` :
+                    `(leases.lease_term = 'fixed' AND 
+                        leases.lease_end_date > DATE_ADD(NOW(), INTERVAL 7 DAY) 
+                        OR leases.lease_term <> 'fixed')` :
                     tab === 2 ?
-                        `leases.lease_end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)` :
-                        `leases.lease_end_date < NOW()`
+                        `(leases.lease_term = 'fixed' AND 
+                        leases.lease_end_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
+                            OR leases.lease_term <> 'fixed')` :
+                        `(leases.lease_term = 'fixed' AND leases.lease_end_date < NOW()
+                            OR leases.lease_term <> 'fixed')`
                 }
             ${search.length > 0 ? `&& CONCAT_WS('-', property.address,residents.first_name,residents.last_name,residents.email, residents.number) LIKE 
             '%${search}%'` : ''}
